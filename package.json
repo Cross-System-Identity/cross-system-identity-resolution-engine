@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Privacy-preserving cross-system identity resolution engine for secure identity linkage, verification, and audit.",
   "type": "module",
-  "main": "src/security/index.js",
+  "main": "src/engine/index.js",
   "scripts": {
-    "test": "node --test tests/security.test.js",
-    "test:security": "node src/security/index.js"
+    "test": "node --test tests/security.test.js tests/engine.test.js",
+    "test:security": "node src/security/index.js",
+    "test:engine": "node --test tests/engine.test.js",
+    "demo:engine": "node src/engine/index.js"
   },
   "keywords": [
     "identity-resolution",
