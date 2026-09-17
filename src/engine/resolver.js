@@ -61,16 +61,24 @@ export function resolveIdentity(recordA, recordB, options = {}) {
     };
   }
 
-  // Step 4: Calculate weighted confidence score
-  const { confidenceScore, breakdown } = calculateConfidenceScore({
+  // Step 4: Determine whether this is cross-system matching
+const crossSystem =
+    recordA.identityType &&
+    recordB.identityType &&
+    recordA.identityType.toUpperCase() !==
+    recordB.identityType.toUpperCase();
+
+// Step 5: Calculate weighted confidence score
+const { confidenceScore, breakdown } = calculateConfidenceScore({
     exactTokenMatch,
     nameSimilarity: matchResult.crossFieldScores.nameScore,
     dobMatch: matchResult.crossFieldScores.dobScore,
     identityValueSimilarity: matchResult.crossFieldScores.identityValueScore,
-    zkpVerified
-  });
+    zkpVerified,
+    crossSystem
+});
 
-  // Step 5: Assign final verdict
+  // Step 6: Assign final verdict
   const verdict = assignMatchVerdict(confidenceScore);
 
   const executionTimeMs = parseFloat((performance.now() - startTime).toFixed(2));

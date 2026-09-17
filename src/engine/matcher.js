@@ -81,9 +81,17 @@ export function crossSystemMatch(recordA, recordB, systemSalt = 'SYSTEM_SALT_202
 
   // 3. Cross-field: Date of birth exact match
   if (recordA.dateOfBirth && recordB.dateOfBirth) {
+    const dobA = new Date(recordA.dateOfBirth)
+        .toISOString()
+        .split('T')[0];
+
+    const dobB = new Date(recordB.dateOfBirth)
+        .toISOString()
+        .split('T')[0];
+
     result.crossFieldScores.dobScore =
-      recordA.dateOfBirth === recordB.dateOfBirth ? 1.0 : 0.0;
-  }
+        dobA === dobB ? 1.0 : 0.0;
+}
 
   // 4. Cross-field: Identity value similarity (fuzzy match across different systems)
   if (recordA.identityValue && recordB.identityValue) {
