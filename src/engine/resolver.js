@@ -144,23 +144,38 @@ export function batchResolve(pairs, options = {}) {
  * @returns {string} Formatted summary
  */
 export function formatResolutionSummary(result) {
+  // Detect cross-system match by checking if identity types differ
+  const isCrossSystem =
+    result.identityA.type &&
+    result.identityB.type &&
+    result.identityA.type.toUpperCase() !== result.identityB.type.toUpperCase();
+
+  // Set correct max scores based on scoring mode
+  const maxExact    = isCrossSystem ? ' 0.00' : '40.00';
+  const maxName     = isCrossSystem ? '50.00' : '20.00';
+  const maxDob      = isCrossSystem ? '40.00' : '15.00';
+  const maxIdVal    = isCrossSystem ? ' 5.00' : '15.00';
+  const maxZkp      = isCrossSystem ? ' 5.00' : '10.00';
+  const matchMode   = isCrossSystem ? 'Cross-System' : 'Same-System ';
+
   const lines = [
     `┌─────────────────────────────────────────────────┐`,
     `│         IDENTITY RESOLUTION RESULT              │`,
     `├─────────────────────────────────────────────────┤`,
     `│ Verdict:     ${result.matchResult.padEnd(34)}│`,
     `│ Confidence:  ${(result.confidenceScore + '%').padEnd(34)}│`,
+    `│ Match Mode:  ${matchMode.padEnd(34)}│`,
     `│ Description: ${result.description.substring(0, 34).padEnd(34)}│`,
     `├─────────────────────────────────────────────────┤`,
     `│ Identity A:  ${(result.identityA.type || 'N/A').padEnd(34)}│`,
     `│ Identity B:  ${(result.identityB.type || 'N/A').padEnd(34)}│`,
     `├─────────────────────────────────────────────────┤`,
     `│ SCORING BREAKDOWN                               │`,
-    `│   Exact Token:     ${(result.scoring.breakdown.exactTokenScore.toFixed(2) + ' / 40.00').padEnd(28)}│`,
-    `│   Name Similarity: ${(result.scoring.breakdown.nameScore.toFixed(2) + ' / 20.00').padEnd(28)}│`,
-    `│   DOB Match:       ${(result.scoring.breakdown.dobScore.toFixed(2) + ' / 15.00').padEnd(28)}│`,
-    `│   Identity Value:  ${(result.scoring.breakdown.identityValueScore.toFixed(2) + ' / 15.00').padEnd(28)}│`,
-    `│   ZKP Verified:    ${(result.scoring.breakdown.zkpScore.toFixed(2) + ' / 10.00').padEnd(28)}│`,
+    `│   Exact Token:     ${(result.scoring.breakdown.exactTokenScore.toFixed(2) + ' / ' + maxExact).padEnd(28)}│`,
+    `│   Name Similarity: ${(result.scoring.breakdown.nameScore.toFixed(2) + ' / ' + maxName).padEnd(28)}│`,
+    `│   DOB Match:       ${(result.scoring.breakdown.dobScore.toFixed(2) + ' / ' + maxDob).padEnd(28)}│`,
+    `│   Identity Value:  ${(result.scoring.breakdown.identityValueScore.toFixed(2) + ' / ' + maxIdVal).padEnd(28)}│`,
+    `│   ZKP Verified:    ${(result.scoring.breakdown.zkpScore.toFixed(2) + ' / ' + maxZkp).padEnd(28)}│`,
     `├─────────────────────────────────────────────────┤`,
     `│ Execution Time: ${(result.executionTimeMs + 'ms').padEnd(31)}│`,
     `└─────────────────────────────────────────────────┘`
