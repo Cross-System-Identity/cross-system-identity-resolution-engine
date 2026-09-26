@@ -4,6 +4,7 @@ import { authenticate } from "./auth.js";
 import verificationRouter from "./verification.js";
 import matchingRouter from "./matching.js";
 import auditRouter from "./audit.js";
+import identitiesRouter from "./identities.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.static("public"));
 app.use("/api", verificationRouter);
 app.use("/api", matchingRouter);
 app.use("/api", auditRouter);
+app.use("/api", identitiesRouter);
 
 app.get("/api/protected", authenticate, (req, res) => {
     res.json({

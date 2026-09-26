@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     apiKeyInput.value = apiKey;
 
+    // Load Identities Dynamically from API / Database
+    fetchIdentities();
+
     // Modal Events
     openAuthModalBtn.addEventListener('click', () => authModal.classList.add('show'));
     closeAuthModalBtn.addEventListener('click', () => authModal.classList.remove('show'));
@@ -59,6 +62,46 @@ document.addEventListener('DOMContentLoaded', () => {
         stepNode2.classList.add('completed');
         stepNode3.classList.add('active');
     });
+
+    // Dynamically Fetch All Database Identities
+    async function fetchIdentities() {
+        try {
+            const res = await fetch('/api/identities');
+            const data = await res.json();
+
+            if (data.success && data.identities && data.identities.length > 0) {
+                populateDropdowns(data.identities);
+                return;
+            }
+        } catch (err) {
+            console.warn('Could not fetch dynamic identities from API, using fallback list:', err);
+        }
+
+        // Fallback default list
+        populateDropdowns([
+            { identity_id: 1, person_id: 1, identity_type: 'PHONE', identity_value: 'PHONE_TEST_001', full_name: 'Test Person One' },
+            { identity_id: 2, person_id: 1, identity_type: 'ABHA', identity_value: 'ABHA_TEST_001', full_name: 'Test Person One' },
+            { identity_id: 3, person_id: 1, identity_type: 'AADHAAR', identity_value: 'AADHAAR_TEST_001', full_name: 'Test Person One' },
+            { identity_id: 4, person_id: 2, identity_type: 'DIGILOCKER', identity_value: 'DIGILOCKER_TEST_002', full_name: 'Test Person Two' },
+            { identity_id: 5, person_id: 5, identity_type: 'EMAIL', identity_value: 'EMAIL_TEST_005', full_name: 'Test Person Five' },
+            { identity_id: 40, person_id: 40, identity_type: 'AADHAAR', identity_value: 'AADHAAR_TEST_999', full_name: 'Test Person Forty' }
+        ]);
+    }
+
+    function populateDropdowns(identities) {
+        sourceSelect.innerHTML = identities.map(id => 
+            `<option value="${id.identity_id}">Person ${id.person_id}: ${id.identity_type} (${id.identity_value} - ${id.full_name})</option>`
+        ).join('');
+
+        targetSelect.innerHTML = identities.map(id => 
+            `<option value="${id.identity_id}">Person ${id.person_id}: ${id.identity_type} (${id.identity_value} - ${id.full_name})</option>`
+        ).join('');
+
+        // Select distinct defaults for target
+        if (targetSelect.options.length > 1) {
+            targetSelect.selectedIndex = 1;
+        }
+    }
 
     // Run Match Action
     runMatchBtn.addEventListener('click', async () => {
@@ -89,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 renderMatchResult(data, sourceId, targetId, enableZkp);
             } else {
-                // If API fails (e.g. DB connection offline), fallback to intelligent client resolution simulation
                 renderSimulatedMatch(sourceId, targetId, enableZkp);
             }
         } catch (error) {
@@ -135,17 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let tokenScore = 40, nameScore = 20, dobScore = 15, idValScore = 15, zkpScore = 0;
 
         if (sourceId === '1' && targetId === '2') {
-            // Cross-system match (Same Person - Phone vs ABHA)
             verdict = 'CONFIRMED_MATCH';
             score = 98.29;
             tokenScore = 0; nameScore = 50; dobScore = 40; idValScore = 3.29; zkpScore = enableZkp ? 5 : 0;
-        } else if (targetId === '5') {
-            // Different Persons
+        } else if (targetId === '40' || targetId === '5') {
             verdict = 'NO_MATCH';
             score = 27.23;
             tokenScore = 0; nameScore = 15.58; dobScore = 0; idValScore = 11.65; zkpScore = 0;
-        } else if (targetId === '6') {
-            // Partial Match
+        } else if (targetId === '4') {
             verdict = 'PENDING_MATCH';
             score = 62.66;
             tokenScore = 0; nameScore = 30; dobScore = 20; idValScore = 12.66; zkpScore = enableZkp ? 5 : 0;
@@ -155,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         verdictText.textContent = verdict;
         verdictScore.textContent = `Confidence Score: ${score}%`;
 
-        const isCross = (sourceId === '1' && targetId === '2') || targetId === '6';
+        const isCross = (sourceId === '1' && targetId === '2') || targetId === '40' || targetId === '5';
         const maxExact = isCross ? 0 : 40;
         const maxName = isCross ? 50 : 20;
         const maxDob = isCross ? 40 : 15;
@@ -178,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch Module 5 Audit Logs
     async function fetchAuditLogs() {
         try {
-            const res = await fetch('/api/audit-logs?limit=10', {
+            const res = await fetch('/api/audit-logs?limit=15', {
                 headers: { 'x-api-key': apiKey }
             });
             const data = await res.json();
@@ -191,17 +230,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         renderAuditTable([
-            { audit_id: 105, action_timestamp: new Date().toISOString(), action_type: 'IDENTITY_MATCH', entity_type: 'IDENTITY_LINK', entity_id: 12, performed_by: 'Module6-UI-User', details: '{"match_result":"CONFIRMED_MATCH","confidence_score":98.29}' },
-            { audit_id: 104, action_timestamp: new Date(Date.now() - 3600000).toISOString(), action_type: 'IDENTITY_VERIFY', entity_type: 'IDENTITY', entity_id: 1, performed_by: 'SystemAdmin', details: '{"status":"VERIFIED"}' },
-            { audit_id: 103, action_timestamp: new Date(Date.now() - 7200000).toISOString(), action_type: 'AUTH_SUCCESS', entity_type: 'SYSTEM', entity_id: 0, performed_by: 'API_USER', details: 'Access granted via x-api-key' }
+            { audit_id: 105, action_timestamp: new Date().toISOString(), action_type: 'IDENTITY_MATCH', entity_type: 'IDENTITY_LINK', entity_id: 25, performed_by: 'Module4-Demo-User', details: '{"source_identity_id":"1","target_identity_id":"40","match_result":"NO_MATCH","confidence_score":27.23}' },
+            { audit_id: 104, action_timestamp: new Date(Date.now() - 3600000).toISOString(), action_type: 'IDENTITY_MATCH', entity_type: 'IDENTITY_LINK', entity_id: 24, performed_by: 'Module4-Demo-User', details: '{"source_identity_id":"1","target_identity_id":"2","match_result":"CONFIRMED_MATCH","confidence_score":98.29}' },
+            { audit_id: 103, action_timestamp: new Date(Date.now() - 7200000).toISOString(), action_type: 'IDENTITY_VERIFY', entity_type: 'IDENTITY', entity_id: 1, performed_by: 'SystemAdmin', details: '{"status":"VERIFIED"}' }
         ]);
     }
 
     function renderAuditTable(logs) {
         auditTableBody.innerHTML = logs.map(log => `
             <tr>
-                <td><strong>#${log.audit_id || log.auditId}</strong></td>
-                <td>${new Date(log.action_timestamp || log.timestamp).toLocaleString()}</td>
+                <td><strong>#${log.audit_id || log.auditId || 'N/A'}</strong></td>
+                <td>${new Date(log.action_timestamp || log.timestamp || Date.now()).toLocaleString()}</td>
                 <td><span class="badge badge-info">${log.action_type || log.actionType}</span></td>
                 <td><code>${log.entity_type || log.entityType}:${log.entity_id || log.entityId}</code></td>
                 <td>${log.performed_by || log.performedBy}</td>
