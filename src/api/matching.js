@@ -77,7 +77,7 @@ router.post("/match", authenticate, async (req, res) => {
         // Reuse Module 3 Identity Resolution Engine
         const resolution = resolveIdentity(recordA, recordB, {
             systemSalt: process.env.SYSTEM_SALT || "SYSTEM_SALT_2026",
-            enableZkp: false
+            enableZkp: Boolean(req.body.enable_zkp || req.body.enableZkp)
         });
 
         // Store the matching result in identity_links
@@ -119,7 +119,8 @@ router.post("/match", authenticate, async (req, res) => {
             match_result: resolution.matchResult,
             confidence_score: resolution.confidenceScore,
             description: resolution.description,
-            execution_time_ms: resolution.executionTimeMs
+            execution_time_ms: resolution.executionTimeMs,
+            scoring: resolution.scoring
         });
 
     } catch (error) {

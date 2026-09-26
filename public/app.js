@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (data.success) {
-                renderMatchResult(data);
+                renderMatchResult(data, sourceId, targetId, enableZkp);
             } else {
                 // If API fails (e.g. DB connection offline), fallback to intelligent client resolution simulation
                 renderSimulatedMatch(sourceId, targetId, enableZkp);
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function renderMatchResult(data) {
+    function renderMatchResult(data, sourceId, targetId, enableZkp) {
         const verdict = data.match_result || 'CONFIRMED_MATCH';
         const score = data.confidence_score || 90.0;
 
@@ -110,11 +110,23 @@ document.addEventListener('DOMContentLoaded', () => {
         verdictText.textContent = verdict;
         verdictScore.textContent = `Confidence Score: ${score}% (${data.description || 'Verified Linkage'})`;
 
-        updateBar(scoreToken, fillToken, 40, 40, 40);
-        updateBar(scoreName, fillName, 20, 20, 20);
-        updateBar(scoreDob, fillDob, 15, 15, 15);
-        updateBar(scoreIdVal, fillIdVal, 15, 15, 15);
-        updateBar(scoreZkp, fillZkp, 0, 10, 10);
+        if (data.scoring && data.scoring.breakdown) {
+            const bd = data.scoring.breakdown;
+            const isCross = (bd.exactTokenScore === 0 && (bd.nameScore > 20 || bd.dobScore > 15));
+            const maxExact = isCross ? 0 : 40;
+            const maxName = isCross ? 50 : 20;
+            const maxDob = isCross ? 40 : 15;
+            const maxIdVal = isCross ? 5 : 15;
+            const maxZkp = isCross ? 5 : 10;
+
+            updateBar(scoreToken, fillToken, bd.exactTokenScore || 0, maxExact, maxExact || 40);
+            updateBar(scoreName, fillName, bd.nameScore || 0, maxName, maxName);
+            updateBar(scoreDob, fillDob, bd.dobScore || 0, maxDob, maxDob);
+            updateBar(scoreIdVal, fillIdVal, bd.identityValueScore || 0, maxIdVal, maxIdVal);
+            updateBar(scoreZkp, fillZkp, bd.zkpScore || 0, maxZkp, maxZkp);
+        } else {
+            renderSimulatedMatch(sourceId, targetId, enableZkp);
+        }
     }
 
     function renderSimulatedMatch(sourceId, targetId, enableZkp) {
