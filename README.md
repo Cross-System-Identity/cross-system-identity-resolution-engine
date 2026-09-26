@@ -20,7 +20,7 @@ This project develops a **privacy-preserving identity resolution engine** that c
 | Module 2 — Security & Privacy | PPRL blinded tokens, Bloom filters, ZKP, AES encryption | ✅ Completed |
 | Module 3 — Identity Resolution Engine | Deterministic & probabilistic matching, confidence scoring | ✅ Completed |
 | Module 4 — Verification API & Access Control | Node.js/Express REST API, authentication, simulated providers | ✅ Completed |
-| Module 5 — Audit Logging & Compliance | Centralized system tracking, logging integration for data protection | 🔜 To Be Implemented |
+| Module 5 — Audit Logging & Compliance | Centralized system tracking, logging integration for data protection | ✅ Completed |
 | Module 6 — Frontend & Final Integration | Web UI dashboard for identity resolution & audit visualization | 🔜 To Be Implemented |
 
 ---
@@ -75,13 +75,15 @@ The Node.js/Express backend that connects the database, privacy module, and matc
 
 ---
 
-## Module 5 — Audit Logging & Compliance *(To Be Implemented)* 🔜
+## Module 5 — Audit Logging & Compliance ✅
 
 Dedicated module for system traceability and data protection compliance.
 
-- Centralized logging utility targeting the `audit_logs` database table.
-- Records critical actions: verification attempts, match resolutions, and system access.
-- Refactors Module 4 APIs to automatically trigger comprehensive audit trails.
+- **Centralized Logger:** `src/audit/logger.js` writes events directly to the `audit_logs` database table.
+- **API Integration:** Automatically records `IDENTITY_MATCH`, `IDENTITY_VERIFY`, and authentication events across Module 4 APIs.
+- **Audit Endpoint:** Exposes `GET /api/audit-logs` endpoint for audit dashboard and compliance reporting.
+
+**Files:** `src/audit/logger.js`, `src/audit/index.js`, `src/api/audit.js`, `tests/audit.test.js`
 
 ---
 
@@ -111,11 +113,14 @@ npm install
 
 ### Run Tests
 ```bash
-# Run all unit tests (Security & Engine)
+# Run all unit tests (Security, Engine, and Audit)
 npm test
+
+# Run audit module demo
+npm run demo:audit
 ```
 
-### Run API Server (Module 4)
+### Run API Server (Module 4 & 5)
 ```bash
 node src/api/server.js
 ```
@@ -138,5 +143,5 @@ Each module depends on the earlier one. The database module is the base for the 
 - ✅ Secure identity linking with 95%+ accuracy
 - ✅ Zero-knowledge proof implementation
 - ✅ API response time under 1 second
-- 🔜 Comprehensive audit trail for all operations (Module 5)
+- ✅ Comprehensive audit trail for all operations (Module 5)
 - ✅ Privacy compliance — no raw PII exposed

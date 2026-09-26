@@ -2,6 +2,7 @@ import express from "express";
 import pool from "./db.js";
 import { authenticate } from "./auth.js";
 import { resolveIdentity } from "../engine/resolver.js";
+import { createAuditLog, ACTION_TYPES, ENTITY_TYPES } from "../audit/logger.js";
 
 const router = express.Router();
 
@@ -93,6 +94,20 @@ router.post("/match", authenticate, async (req, res) => {
                 resolution.description
             ]
         );
+
+        // Module 5 Audit Logging: Record system action into audit_logs table
+        await createAuditLog({
+            actionType: ACTION_TYPES.IDENTITY_MATCH,
+            entityType: ENTITY_TYPES.IDENTITY_LINK,
+            entityId: insertResult.insertId,
+            performedBy: req.user?.name || "API_USER",
+            details: {
+                source_identity_id,
+                target_identity_id,
+                match_result: resolution.matchResult,
+                confidence_score: resolution.confidenceScore
+            }
+        });
 
         // Return privacy-preserving result
         res.json({

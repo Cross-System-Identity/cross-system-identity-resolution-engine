@@ -5,10 +5,12 @@
   "type": "module",
   "main": "src/engine/index.js",
   "scripts": {
-    "test": "node --test tests/security.test.js tests/engine.test.js",
+    "test": "node --test tests/security.test.js tests/engine.test.js tests/audit.test.js",
     "test:security": "node src/security/index.js",
     "test:engine": "node --test tests/engine.test.js",
-    "demo:engine": "node src/engine/index.js"
+    "test:audit": "node --test tests/audit.test.js",
+    "demo:engine": "node src/engine/index.js",
+    "demo:audit": "node src/audit/index.js"
   },
   "keywords": [
     "identity-resolution",

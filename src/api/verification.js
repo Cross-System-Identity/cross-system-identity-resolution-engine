@@ -1,6 +1,7 @@
 import express from "express";
 import pool from "./db.js";
 import { authenticate } from "./auth.js";
+import { createAuditLog, ACTION_TYPES, ENTITY_TYPES } from "../audit/logger.js";
 
 const router = express.Router();
 
@@ -56,6 +57,19 @@ router.post("/verify", authenticate, async (req, res) => {
              WHERE identity_id = ?`,
             [verificationResult, identity_id]
         );
+
+        // Module 5 Audit Logging: Record system action into audit_logs table
+        await createAuditLog({
+            actionType: ACTION_TYPES.IDENTITY_VERIFY,
+            entityType: ENTITY_TYPES.IDENTITY,
+            entityId: identity_id,
+            performedBy: req.user?.name || "API_USER",
+            details: {
+                verification_id: result.insertId,
+                verification_method,
+                verification_result: verificationResult
+            }
+        });
 
         res.json({
             success: true,
