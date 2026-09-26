@@ -174,12 +174,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSimulatedMatch(sourceId, targetId, enableZkp) {
         let verdict = 'CONFIRMED_MATCH';
         let score = 90.0;
-        let tokenScore = 40, nameScore = 20, dobScore = 15, idValScore = 15, zkpScore = 0;
+        let tokenScore = 40, nameScore = 20, dobScore = 15, idValScore = 15;
+        let zkpScore = (enableZkp && (sourceId === '1' || sourceId === '2' || sourceId === '3')) ? 10 : 0;
 
         if (sourceId === '1' && targetId === '2') {
             verdict = 'CONFIRMED_MATCH';
-            score = 98.29;
+            score = enableZkp ? 98.29 : 93.29;
             tokenScore = 0; nameScore = 50; dobScore = 40; idValScore = 3.29; zkpScore = enableZkp ? 5 : 0;
+        } else if (sourceId === '1' && targetId === '3') {
+            verdict = 'CONFIRMED_MATCH';
+            score = enableZkp ? 100.0 : 90.0;
+            tokenScore = 40; nameScore = 20; dobScore = 15; idValScore = 15; zkpScore = enableZkp ? 10 : 0;
         } else if (targetId === '40' || targetId === '5') {
             verdict = 'NO_MATCH';
             score = 27.23;

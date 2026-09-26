@@ -64,14 +64,16 @@ router.post("/match", authenticate, async (req, res) => {
             identityType: source.identity_type,
             identityValue: source.identity_value,
             personName: source.full_name,
-            dateOfBirth: source.date_of_birth
+            dateOfBirth: source.date_of_birth,
+            secretForZkp: `ZKP_SECRET_PERSON_${source.person_id}`
         };
 
         const recordB = {
             identityType: target.identity_type,
             identityValue: target.identity_value,
             personName: target.full_name,
-            dateOfBirth: target.date_of_birth
+            dateOfBirth: target.date_of_birth,
+            secretForZkp: `ZKP_SECRET_PERSON_${target.person_id}`
         };
 
         // Reuse Module 3 Identity Resolution Engine
