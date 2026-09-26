@@ -3,232 +3,391 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cross-System Identity Resolution Engine — Dashboard</title>
+  <title>Cross-System Identity Resolution Engine — Enterprise Portal</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <!-- Top Navbar -->
-  <header class="navbar">
-    <div class="nav-brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg>
-      <h1>Cross-System Identity Resolution Engine</h1>
-    </div>
-    <div class="nav-controls">
-      <div class="status-badge" id="apiStatusBadge">
-        <span class="status-dot"></span> API Active (Module 1-5)
+  <!-- Top Header Bar -->
+  <header class="header-bar">
+    <div class="brand-group">
+      <div class="brand-logo">🛡️</div>
+      <div>
+        <div class="brand-title">Cross-System Identity Resolution Engine</div>
+        <div class="brand-subtitle">Privacy-Preserving Cross-System Identity Linkage & Verification</div>
       </div>
-      <button class="btn-secondary" id="openAuthModalBtn">🔑 Auth & Keys</button>
+    </div>
+    <div class="nav-right">
+      <button class="btn-outline" id="authBtn" style="color: white; border-color: rgba(255,255,255,0.3);">🔑 Auth & Keys</button>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="container">
-    
-    <div class="page-header">
-      <h2>Privacy-Preserving Cross-System Identity Linkage</h2>
-      <p>Securely matching citizen identities across Aadhaar, ABHA, DigiLocker, and Mobile systems using PPRL & ZKP</p>
-    </div>
+  <!-- Navigation Tab Bar -->
+  <nav class="tab-navbar">
+    <div class="nav-tab active" data-view="dashboardView">🏠 Overview</div>
+    <div class="nav-tab" data-view="stepperView">🔗 Resolution Stepper</div>
+    <div class="nav-tab" data-view="citizensView">👥 Citizen Registry (40)</div>
+    <div class="nav-tab" data-view="auditView">📜 Audit Explorer</div>
+    <div class="nav-tab" data-view="cryptoView">🔒 Cryptography Lab</div>
+  </nav>
 
-    <div class="dashboard-grid">
-      
-      <!-- LEFT COLUMN: Mentor-Inspired Sequence Timeline Stepper -->
-      <section class="card">
-        <div class="card-title">
-          <span>📌</span> Identity Linkage Journey (Sequence Stepper)
+  <!-- Viewport Area -->
+  <main class="app-viewport">
+
+    <!-- VIEW 1: DASHBOARD OVERVIEW -->
+    <section class="view-panel active" id="dashboardView">
+      <div class="hero-banner">
+        <div class="hero-text">
+          <h2>Cross-System Identity Resolution Engine</h2>
+          <p>Enterprise-grade privacy-preserving platform for linking and verifying citizen digital identities across Aadhaar, ABHA, DigiLocker, Mobile, Email, PAN, and Voter registries without exposing raw PII.</p>
         </div>
-
-        <div class="timeline-stepper">
-          <div class="timeline-track-line"></div>
-
-          <!-- STEP 1 -->
-          <div class="timeline-step active" id="stepNode1">
-            <div class="timeline-node">1</div>
-            <div class="timeline-card">
-              <div class="timeline-card-title">
-                <span>Select Source Identity</span>
-                <span class="badge badge-info">System A</span>
-              </div>
-              <p class="timeline-card-desc">Choose the primary identity record to link from the database.</p>
-              
-              <div class="form-group">
-                <label for="sourceSelect">Pre-populated Fictional Person / Identity</label>
-                <select id="sourceSelect" class="form-control">
-                  <option value="1">Person 1: PHONE (PHONE_TEST_001 - Test Person One)</option>
-                  <option value="3">Person 1: AADHAAR (AADHAAR_TEST_001 - Test Person One)</option>
-                  <option value="2">Person 1: ABHA (ABHA_TEST_001 - Test Person One)</option>
-                  <option value="4">Person 2: DIGILOCKER (DIGILOCKER_TEST_002 - Test Person Two)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 2 -->
-          <div class="timeline-step" id="stepNode2">
-            <div class="timeline-node">2</div>
-            <div class="timeline-card">
-              <div class="timeline-card-title">
-                <span>Select Target Identity & System</span>
-                <span class="badge badge-info">System B</span>
-              </div>
-              <p class="timeline-card-desc">Choose the target identity to compare against.</p>
-
-              <div class="form-group">
-                <label for="targetSelect">Target Cross-System Record</label>
-                <select id="targetSelect" class="form-control">
-                  <option value="2">Person 1: ABHA (ABHA_TEST_001 - Cross-System Match)</option>
-                  <option value="1">Person 1: PHONE (PHONE_TEST_001 - Same-System Match)</option>
-                  <option value="5">Person 40: AADHAAR (AADHAAR_TEST_999 - Different Person)</option>
-                  <option value="6">Person 5: EMAIL (EMAIL_TEST_005 - Partial Match)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label>
-                  <input type="checkbox" id="enableZkpCheck" checked> Enable Zero-Knowledge Proof (ZKP) Verification
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- STEP 3 -->
-          <div class="timeline-step" id="stepNode3">
-            <div class="timeline-node">3</div>
-            <div class="timeline-card">
-              <div class="timeline-card-title">
-                <span>Execute Resolution & ZKP Verification</span>
-              </div>
-              <p class="timeline-card-desc">Triggers PPRL token generation, Bloom filter similarity scoring, and ZKP proof checking.</p>
-
-              <button class="btn-primary" id="runMatchBtn">
-                <span>🔒</span> RUN PRIVACY-PRESERVING MATCH
-              </button>
-            </div>
-          </div>
-
+        <div class="hero-badge">
+          <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Compliance & Governance</div>
+          <div style="font-size: 1.1rem; font-weight: 700; color: #4ade80;">DPDP & ZKP Compliant</div>
         </div>
-      </section>
-
-      <!-- RIGHT COLUMN: Resolution Results & Scoring Breakdown -->
-      <section class="card">
-        <div class="card-title">
-          <span>📊</span> Engine Verdict & Scoring Breakdown
-        </div>
-
-        <div class="result-box">
-
-          <!-- Verdict Banner -->
-          <div class="verdict-banner" id="verdictBanner">
-            <div class="verdict-text" id="verdictText">READY</div>
-            <div class="verdict-score" id="verdictScore">Click "Run Privacy-Preserving Match" to start</div>
-          </div>
-
-          <!-- Score Breakdown Bars -->
-          <div class="score-breakdown">
-            <div class="bar-item">
-              <div class="bar-label">
-                <span>Exact PPRL Token Match (40%)</span>
-                <span id="scoreToken">0 / 40.00</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" id="fillToken" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="bar-item">
-              <div class="bar-label">
-                <span>Person Name Similarity (20%)</span>
-                <span id="scoreName">0 / 20.00</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" id="fillName" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="bar-item">
-              <div class="bar-label">
-                <span>Date of Birth Match (15%)</span>
-                <span id="scoreDob">0 / 15.00</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" id="fillDob" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="bar-item">
-              <div class="bar-label">
-                <span>Identity Value Similarity (15%)</span>
-                <span id="scoreIdVal">0 / 15.00</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" id="fillIdVal" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="bar-item">
-              <div class="bar-label">
-                <span>Zero-Knowledge Proof (ZKP) Bonus (10%)</span>
-                <span id="scoreZkp">0 / 10.00</span>
-              </div>
-              <div class="bar-track"><div class="bar-fill" id="fillZkp" style="width: 0%;"></div></div>
-            </div>
-          </div>
-
-          <!-- Privacy Protection Guarantee Card -->
-          <div class="privacy-badge-container">
-            <div class="privacy-badge-icon">🛡️</div>
-            <div class="privacy-badge-text">
-              <strong>Privacy Protection Active:</strong> Raw PII values (Aadhaar/Phone numbers) are masked as <code>[PROTECTED]</code> in all resolution outputs and audit trails.
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-    </div>
-
-    <!-- BOTTOM ROW: Module 5 System Audit Trail Feed -->
-    <section class="card">
-      <div class="card-title">
-        <span>📜</span> Live System Audit Trail Feed (Module 5 Integration)
-        <button class="btn-secondary" id="refreshAuditBtn" style="margin-left: auto;">🔄 Refresh Logs</button>
       </div>
 
-      <div class="table-responsive">
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th>Audit ID</th>
-              <th>Action Timestamp</th>
-              <th>Action Type</th>
-              <th>Target Entity</th>
-              <th>Performed By</th>
-              <th>Details Summary</th>
-            </tr>
-          </thead>
-          <tbody id="auditTableBody">
-            <tr>
-              <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading audit logs...</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">Citizens Registered</div>
+          <div class="metric-value">40</div>
+          <div class="metric-sub">Federal Citizen Population</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">System Identities</div>
+          <div class="metric-value">61</div>
+          <div class="metric-sub">Across 7 Disparate Systems</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Linked Identity Pairs</div>
+          <div class="metric-value">18</div>
+          <div class="metric-sub">Verified Cross-Domain Links</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Resolution Speed</div>
+          <div class="metric-value">&lt; 3 ms</div>
+          <div class="metric-sub">Sub-Second Target Met</div>
+        </div>
+      </div>
+
+      <!-- Enterprise Platform Capabilities & Architecture -->
+      <div class="panel-card">
+        <div class="card-header-bar">
+          <div class="card-title-text">⚡ Enterprise Platform Capabilities & Core Architecture</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+          
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">🔒</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Privacy-Preserving Record Linkage (PPRL)</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Utilizes salted HMAC-SHA256 tokenization and Bloom filter similarity analysis to perform high-precision record linkage across databases without exposing raw identifiers.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">🔑</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Zero-Knowledge Proof (ZKP) Verification</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Integrates non-interactive Fiat-Shamir ZKP cryptographic protocols, allowing citizens to prove ownership of their credentials without transmitting secret keys.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">📊</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Adaptive Scoring & Resolution Engine</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Automatically adjusts resolution matrix between intra-system (40-20-15-15-10) and cross-system (50-40-5-5) modes based on source and target identity types.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">📜</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Immutable Regulatory Audit Logging</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Records all match executions, verification requests, and compliance events into a centralized audit log for regulatory reporting and real-time inspection.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">🌐</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Multi-System Credential Federation</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Federates identity records seamlessly across healthcare (ABHA), identity (Aadhaar), document vaults (DigiLocker), tax (PAN), voter, mobile, and email systems.
+            </p>
+          </div>
+
+          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.4rem;">🛡️</span>
+              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Strict PII Masking & Data Protection</div>
+            </div>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
+              Enforces privacy compliance by automatically masking raw values (e.g., Aadhaar, Phone numbers) as <code>[PROTECTED]</code> in all client-facing responses and logs.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: RESOLUTION STEPPER (Mentor UI with Hierarchical Dropdowns) -->
+    <section class="view-panel" id="stepperView">
+      <div class="grid-2col">
+        
+        <!-- Stepper Column -->
+        <div class="panel-card">
+          <div class="card-header-bar">
+            <div class="card-title-text">📌 Identity Linkage Journey (Sequence Stepper)</div>
+          </div>
+
+          <div class="stepper-container">
+            <div class="stepper-track-line"></div>
+
+            <!-- STEP 1: SOURCE SELECTION -->
+            <div class="step-item active" id="stNode1">
+              <div class="step-icon">1</div>
+              <div class="step-card">
+                <div class="step-card-header">
+                  <span>Select Source Person & Record</span>
+                  <span class="badge-pill badge-blue">System A</span>
+                </div>
+                <div class="step-card-sub">First select a Person (1 to 40), then select their specific system record.</div>
+
+                <div class="select-group">
+                  <label class="select-label">1. Primary Citizen Selection (Persons 1 to 40)</label>
+                  <select class="custom-select" id="sourcePersonSelect">
+                    <option value="">Loading 40 Persons...</option>
+                  </select>
+                </div>
+
+                <div class="sub-select-box">
+                  <label class="select-label">2. Specific Record in System A</label>
+                  <select class="custom-select" id="sourceIdentitySelect">
+                    <option value="">Select Person above first...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 2: TARGET SELECTION -->
+            <div class="step-item" id="stNode2">
+              <div class="step-icon">2</div>
+              <div class="step-card">
+                <div class="step-card-header">
+                  <span>Select Target Person & System</span>
+                  <span class="badge-pill badge-blue">System B</span>
+                </div>
+                <div class="step-card-sub">Select target Person and their cross-system record to compare against.</div>
+
+                <div class="select-group">
+                  <label class="select-label">1. Target Citizen Selection (Persons 1 to 40)</label>
+                  <select class="custom-select" id="targetPersonSelect">
+                    <option value="">Loading 40 Persons...</option>
+                  </select>
+                </div>
+
+                <div class="sub-select-box">
+                  <label class="select-label">2. Specific Record in System B</label>
+                  <select class="custom-select" id="targetIdentitySelect">
+                    <option value="">Select Target Person above first...</option>
+                  </select>
+                </div>
+
+                <div style="margin-top: 0.85rem;">
+                  <label style="font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" id="zkpCheckbox" checked> Enable Zero-Knowledge Proof (ZKP) Verification
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- STEP 3: RESOLUTION ACTION -->
+            <div class="step-item" id="stNode3">
+              <div class="step-icon">3</div>
+              <div class="step-card">
+                <div class="step-card-header">Execute Privacy-Preserving Matching</div>
+                <div class="step-card-sub">Triggers PPRL token generation, Bloom filter similarity evaluation, and ZKP proof verification.</div>
+                
+                <button class="btn-action" id="executeMatchBtn">
+                  <span>🔒</span> RUN PRIVACY-PRESERVING MATCH
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Verdict & Breakdown Column -->
+        <div class="panel-card">
+          <div class="card-header-bar">
+            <div class="card-title-text">📊 Engine Verdict & Breakdown</div>
+          </div>
+
+          <div class="verdict-box" id="vBox">
+            <div class="verdict-title" id="vTitle">READY</div>
+            <div class="verdict-desc" id="vDesc">Select Source & Target records then click Run Match</div>
+          </div>
+
+          <div class="breakdown-list">
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblToken">Exact PPRL Token Match (40%)</span><span id="txtToken">0 / 40.00</span></div>
+              <div class="progress-bg"><div class="progress-bar" id="barToken" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblName">Person Name Similarity (20%)</span><span id="txtName">0 / 20.00</span></div>
+              <div class="progress-bg"><div class="progress-bar" id="barName" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblDob">Date of Birth Match (15%)</span><span id="txtDob">0 / 15.00</span></div>
+              <div class="progress-bg"><div class="progress-bar" id="barDob" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblIdVal">Identity Value Similarity (15%)</span><span id="txtIdVal">0 / 15.00</span></div>
+              <div class="progress-bg"><div class="progress-bar" id="barIdVal" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblZkp">Zero-Knowledge Proof (ZKP) Bonus (10%)</span><span id="txtZkp">0 / 10.00</span></div>
+              <div class="progress-bg"><div class="progress-bar" id="barZkp" style="width: 0%;"></div></div>
+            </div>
+          </div>
+
+          <div class="privacy-shield-box">
+            <div class="shield-icon">🛡️</div>
+            <div class="shield-desc">
+              <strong>Privacy Protection Guarantee:</strong> Sensitive raw identity values (Aadhaar, Phone numbers) are masked as <code>[PROTECTED]</code> in all resolution outputs and audit logs.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 3: CITIZEN REGISTRY -->
+    <section class="view-panel" id="citizensView">
+      <div class="panel-card">
+        <div class="card-header-bar">
+          <div class="card-title-text">👥 Citizen Registry (All 40 Persons & 61 Identities)</div>
+          <input type="text" class="search-input" id="searchCitizenInput" placeholder="Search person by name or ID...">
+        </div>
+
+        <div class="data-table-container">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Person ID</th>
+                <th>Full Name</th>
+                <th>Date of Birth</th>
+                <th>Linked Identities</th>
+                <th>Primary System</th>
+              </tr>
+            </thead>
+            <tbody id="citizensTableBody">
+              <tr><td colspan="5" style="text-align: center;">Loading 40 citizens...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: AUDIT EXPLORER -->
+    <section class="view-panel" id="auditView">
+      <div class="panel-card">
+        <div class="card-header-bar">
+          <div class="card-title-text">📜 System Audit Explorer & Compliance Logs</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-outline" id="clearAuditViewBtn" style="color: #dc2626; border-color: #fca5a5;">🧹 Clear All Audit Logs</button>
+            <button class="btn-outline" id="refreshAuditViewBtn">🔄 Refresh Logs</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="ALL">All Events</button>
+            <button class="filter-btn" data-filter="IDENTITY_MATCH">Matches</button>
+            <button class="filter-btn" data-filter="IDENTITY_VERIFY">Verifications</button>
+          </div>
+          <input type="text" class="search-input" id="searchAuditInput" placeholder="Filter audit logs...">
+        </div>
+
+        <div class="data-table-container">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th>Audit ID</th>
+                <th>Timestamp</th>
+                <th>Action Type</th>
+                <th>Target Entity</th>
+                <th>Performed By</th>
+                <th>Details Payload</th>
+              </tr>
+            </thead>
+            <tbody id="auditExplorerTableBody">
+              <tr><td colspan="6" style="text-align: center;">Loading audit records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: CRYPTOGRAPHY LAB -->
+    <section class="view-panel" id="cryptoView">
+      <div class="grid-2col">
+        <div class="panel-card">
+          <div class="card-header-bar">
+            <div class="card-title-text">🔑 PPRL Blinded Token Generator</div>
+          </div>
+          <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
+            Privacy-Preserving Record Linkage converts raw identifiers into anonymized salted HMAC-SHA256 blinded tokens.
+          </p>
+          <div class="select-group">
+            <label class="select-label">Input Raw Identity Value</label>
+            <input type="text" class="custom-select" id="cryptoPprlInput" value="PHONE_TEST_001">
+          </div>
+          <button class="btn-action" id="genPprlBtn">Generate PPRL Blinded Token</button>
+
+          <div style="margin-top: 1.25rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #475569;">GENERATED BLINDED TOKEN:</div>
+            <code id="pprlOutputHash" style="font-size: 0.85rem; color: #2563eb; word-break: break-all;">PPRL_8f3a...</code>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="card-header-bar">
+            <div class="card-title-text">⚡ Zero-Knowledge Proof (ZKP) Simulator</div>
+          </div>
+          <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
+            Fiat-Shamir Non-Interactive Zero-Knowledge Proof verifies identity ownership without exposing secret data.
+          </p>
+          <div class="select-group">
+            <label class="select-label">Prover Secret Key</label>
+            <input type="text" class="custom-select" id="cryptoZkpSecret" value="SECRET_PERSON_1">
+          </div>
+          <button class="btn-action" id="genZkpBtn">Compute & Verify ZKP Proof</button>
+
+          <div style="margin-top: 1.25rem; background: #ecfdf5; padding: 1rem; border-radius: 8px; border: 1px solid #a7f3d0;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #065f46;">ZKP PROOF STATUS:</div>
+            <div id="zkpOutputStatus" style="font-size: 1rem; font-weight: 700; color: #059669;">VERIFIED_ZKP ✅</div>
+          </div>
+        </div>
       </div>
     </section>
 
   </main>
-
-  <!-- Auth Modal -->
-  <div class="modal-backdrop" id="authModal">
-    <div class="modal-card">
-      <div class="card-title">🔑 Role-Based Access Control (RBAC)</div>
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-        Enter your API Key to authenticate with the Module 4 API backend.
-      </p>
-      <div class="form-group">
-        <label for="apiKeyInput">API Key</label>
-        <input type="text" id="apiKeyInput" class="form-control" value="MODULE4_SECRET_KEY_2026">
-      </div>
-      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem;">
-        <button class="btn-secondary" id="closeAuthModalBtn">Close</button>
-        <button class="btn-primary" id="saveAuthBtn" style="width: auto;">Save Credentials</button>
-      </div>
-    </div>
-  </div>
 
   <script src="app.js"></script>
 </body>

@@ -129,6 +129,38 @@ export async function getAuditLogs(options = {}) {
 }
 
 /**
+ * Deletes all audit logs from the database except the single latest one.
+ */
+export async function clearAuditLogsExceptLatest() {
+    try {
+        await pool.query(
+            `DELETE FROM audit_logs
+             WHERE audit_id NOT IN (
+                 SELECT max_id FROM (SELECT MAX(audit_id) AS max_id FROM audit_logs) AS t
+             )`
+        );
+        return { success: true };
+    } catch (error) {
+        console.warn("Could not delete older audit_logs from database:", error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Truncates the entire audit_logs table and resets AUTO_INCREMENT to 1.
+ * Use this to wipe all past logs and start fresh numbering from #1.
+ */
+export async function truncateAuditLogs() {
+    try {
+        await pool.query(`TRUNCATE TABLE audit_logs`);
+        return { success: true };
+    } catch (error) {
+        console.warn("Could not truncate audit_logs:", error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Formats a single audit log entry for console or UI display.
  *
  * @param {object} log - Audit log record

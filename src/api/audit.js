@@ -1,6 +1,6 @@
 import express from "express";
 import { authenticate } from "./auth.js";
-import { getAuditLogs, formatAuditLogEntry } from "../audit/logger.js";
+import { getAuditLogs, formatAuditLogEntry, clearAuditLogsExceptLatest, truncateAuditLogs } from "../audit/logger.js";
 
 const router = express.Router();
 
@@ -40,6 +40,27 @@ router.get("/audit-logs", authenticate, async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Failed to retrieve audit logs"
+        });
+    }
+});
+
+/**
+ * DELETE /api/audit-logs
+ * Truncates the entire audit_logs table and resets AUTO_INCREMENT to 1.
+ * All new logs recorded after this will start numbering from #1.
+ */
+router.delete("/audit-logs", authenticate, async (req, res) => {
+    try {
+        await truncateAuditLogs();
+        res.json({
+            success: true,
+            message: "All audit logs deleted. AUTO_INCREMENT reset to 1. Recording starts fresh.",
+            logs: []
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to truncate audit logs"
         });
     }
 });

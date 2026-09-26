@@ -104,8 +104,10 @@ router.post("/match", authenticate, async (req, res) => {
             entityId: insertResult.insertId,
             performedBy: req.user?.name || "API_USER",
             details: {
-                source_identity_id,
-                target_identity_id,
+                source_person: source.full_name,
+                source_type: source.identity_type,
+                target_person: target.full_name,
+                target_type: target.identity_type,
                 match_result: resolution.matchResult,
                 confidence_score: resolution.confidenceScore
             }
