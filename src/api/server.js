@@ -11,6 +11,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use("/api", verificationRouter);
 app.use("/api", matchingRouter);
@@ -28,8 +29,8 @@ app.get("/api/protected", authenticate, (req, res) => {
 app.get("/api/health", (req, res) => {
     res.json({
         success: true,
-        message: "Cross-System Identity Resolution API is running",
-        modules: ["Module 1", "Module 2", "Module 3", "Module 4", "Module 5"]
+        message: "Cross-System Identity Resolution Engine API & Web Dashboard are running",
+        modules: ["Module 1", "Module 2", "Module 3", "Module 4", "Module 5", "Module 6"]
     });
 });
 
