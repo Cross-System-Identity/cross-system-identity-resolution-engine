@@ -1,4 +1,6 @@
-// Cross-System Identity Resolution Engine — Module 6 Enterprise Portal JS
+// Cross-System Identity Resolution Engine — Enterprise Portal JS
+// Enhanced: robust error handling, cross-system scoring, dynamic citizen registry
+// v2.0: Added smooth animations, loading states, and enhanced visual feedback
 
 document.addEventListener('DOMContentLoaded', () => {
     let apiKey = localStorage.getItem('cs_identity_api_key') || 'MODULE4_SECRET_KEY_2026';
@@ -6,12 +8,140 @@ document.addEventListener('DOMContentLoaded', () => {
     let allIdentitiesData = [];
     let allAuditLogs = [];
 
+    // API availability flag
+    let apiReady = false;
+
+    // Loading state management
+    let isLoading = false;
+
+    // Create loading overlay
+    function createLoadingOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div style="text-align: center; color: white;">
+                <div style="margin-bottom: 16px;">
+                    <div class="loading-spinner"></div>
+                </div>
+                <div style="font-size: 1.1rem; font-weight: 500;">Processing request, please wait...</div>
+                <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 8px;">Do not refresh the page</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+    // Create toast notification
+    function createToast() {
+        const toast = document.createElement('div');
+        toast.id = 'toastNotification';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(20px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-width: 360px;
+        `;
+        document.body.appendChild(toast);
+        return toast;
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toastNotification');
+        if (!toast) return;
+
+        const colors = {
+            success: '#059669',
+            error: '#dc2626',
+            warning: '#f59e0b',
+            info: '#2563eb'
+        };
+
+        toast.textContent = message;
+        toast.style.background = colors[type] || colors.info;
+        toast.style.opacity = '1';
+        toast.style.visibility = 'visible';
+        toast.style.transform = 'translateY(0)';
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.visibility = 'hidden';
+            toast.style.transform = 'translateY(20px)';
+        }, 3500);
+    }
+
+    // Enhanced tooltip functionality
+    function enhanceTooltips() {
+        // Stepper tooltip
+        const stepItems = document.querySelectorAll('.step-item');
+        stepItems.forEach(item => {
+            const stepNumber = item.querySelector('.step-icon');
+            if (stepNumber) {
+                stepNumber.title = `Step ${stepNumber.textContent}`;
+            }
+        });
+
+        // Progress bar tooltips
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach(bar => {
+            const parentRow = bar.closest('.breakdown-row');
+            if (parentRow) {
+                const meta = parentRow.querySelector('.breakdown-meta');
+                if (meta) {
+                    bar.title = 'Progress: ' + bar.style.width;
+                }
+            }
+        });
+    }
+
+    const loadingOverlay = createLoadingOverlay();
+    createToast();
+
+    function showLoading(message = 'Processing request, please wait...') {
+        if (isLoading) return;
+        isLoading = true;
+        loadingOverlay.classList.add('active');
+        loadingOverlay.querySelector('div').innerHTML = `
+            <div style="margin-bottom: 16px;">
+                <div class="loading-spinner"></div>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 500;">${message}</div>
+            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7); margin-top: 8px;">Do not refresh the page</div>
+        `;
+        // Disable interactive elements
+        document.querySelectorAll('.btn-action, .nav-tab').forEach(el => {
+            el.style.pointerEvents = 'none';
+        });
+    }
+
+    function hideLoading() {
+        if (!isLoading) return;
+        isLoading = false;
+        loadingOverlay.classList.remove('active');
+        // Re-enable interactive elements
+        document.querySelectorAll('.btn-action, .nav-tab').forEach(el => {
+            el.style.pointerEvents = 'auto';
+        });
+    }
+
     // Navigation Tab Switching
     const navTabs = document.querySelectorAll('.nav-tab');
     const viewPanels = document.querySelectorAll('.view-panel');
 
     navTabs.forEach(tab => {
         tab.addEventListener('click', () => {
+            if (isLoading) return;
             navTabs.forEach(t => t.classList.remove('active'));
             viewPanels.forEach(p => p.classList.remove('active'));
 
@@ -59,18 +189,22 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchIdentities() {
         try {
             const res = await fetch('/api/identities');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (data.success && data.identities) {
                 allIdentitiesData = data.identities;
+                apiReady = true;
             }
         } catch (e) {
-            console.warn('API /api/identities offline:', e);
+            console.warn('API /api/identities offline, using fallback:', e.message);
+            generateFallbackIdentities();
         }
     }
 
     async function fetchPersons() {
         try {
             const res = await fetch('/api/persons');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (data.success && data.persons && data.persons.length > 0) {
                 allPersonsData = data.persons;
@@ -78,32 +212,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
         } catch (e) {
-            console.warn('API /api/persons offline, using fallback 40 list:', e);
+            console.warn('API /api/persons offline, using fallback 40 list:', e.message);
         }
 
-        // Fallback 40 list
+        // Fallback 350 list
         const fallbackPersons = [];
-        for (let i = 1; i <= 40; i++) {
+        for (let i = 1; i <= 350; i++) {
             fallbackPersons.push({ person_id: i, full_name: `Test Person ${i}` });
         }
         allPersonsData = fallbackPersons;
         populatePersonDropdowns(fallbackPersons);
     }
 
+    function generateFallbackIdentities() {
+        const ids = [];
+        for (let i = 1; i <= 350; i++) {
+            const pad = String(i).padStart(3, '0');
+            ids.push({ identity_id: i * 3 - 2, person_id: i, identity_type: 'PHONE', identity_value: `PHONE_TEST_${pad}`, source_system: 'Demo Mobile System' });
+            ids.push({ identity_id: i * 3 - 1, person_id: i, identity_type: 'ABHA', identity_value: `ABHA_TEST_${pad}`, source_system: 'Demo Health System' });
+            ids.push({ identity_id: i * 3, person_id: i, identity_type: 'AADHAAR', identity_value: `AADHAAR_TEST_${pad}`, source_system: 'Demo ID System' });
+        }
+        allIdentitiesData = ids;
+    }
+
     function populatePersonDropdowns(persons) {
-        const optionsHtml = persons.map(p => 
+        const optionsHtml = persons.map(p =>
             `<option value="${p.person_id}">Person ${p.person_id}: ${p.full_name}</option>`
         ).join('');
 
-        sourcePersonSelect.innerHTML = `<option value="">-- Select Source Person (1 to 40) --</option>` + optionsHtml;
-        targetPersonSelect.innerHTML = `<option value="">-- Select Target Person (1 to 40) --</option>` + optionsHtml;
+        sourcePersonSelect.innerHTML = `<option value="">-- Select Source Person (1 to ${persons.length}) --</option>` + optionsHtml;
+        targetPersonSelect.innerHTML = `<option value="">-- Select Target Person (1 to ${persons.length}) --</option>` + optionsHtml;
 
-        // Auto-select Person 1 for Source and Person 1 (or 40) for Target for instant readiness
+        // Auto-select Person 1 for Source and Person 2 for Target for instant readiness
         sourcePersonSelect.value = "1";
         loadSourceIdentities(1);
 
-        targetPersonSelect.value = "1";
-        loadTargetIdentities(1);
+        targetPersonSelect.value = "2";
+        loadTargetIdentities(2);
     }
 
     // Source Person Change -> Cascade Sub-Dropdown
@@ -129,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadSourceIdentities(personId) {
         sourceIdentitySelect.innerHTML = `<option value="">Loading records for Person ${personId}...</option>`;
         const identities = await fetchIdentitiesForPerson(personId);
-        sourceIdentitySelect.innerHTML = identities.map(id => 
+        sourceIdentitySelect.innerHTML = identities.map(id =>
             `<option value="${id.identity_id}">[${id.identity_type}] ${id.identity_value} (${id.source_system || 'System'})</option>`
         ).join('');
     }
@@ -137,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadTargetIdentities(personId) {
         targetIdentitySelect.innerHTML = `<option value="">Loading records for Person ${personId}...</option>`;
         const identities = await fetchIdentitiesForPerson(personId);
-        targetIdentitySelect.innerHTML = identities.map(id => 
+        targetIdentitySelect.innerHTML = identities.map(id =>
             `<option value="${id.identity_id}">[${id.identity_type}] ${id.identity_value} (${id.source_system || 'System'})</option>`
         ).join('');
     }
@@ -145,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchIdentitiesForPerson(personId) {
         try {
             const res = await fetch(`/api/persons/${personId}/identities`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (data.success && data.identities && data.identities.length > 0) {
                 return data.identities;
@@ -172,9 +318,22 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (sourceId === targetId) {
+            alert('Source and Target must be different identity records!');
+            return;
+        }
+
         stNode3.classList.add('active');
-        executeMatchBtn.disabled = true;
-        executeMatchBtn.innerHTML = '⏳ Computing PPRL & ZKP Verification...';
+
+        // Reset verdict box
+        vBox.className = 'verdict-box';
+        vTitle.textContent = 'PROCESSING';
+        vDesc.textContent = 'Running PPRL tokenization, Bloom filter similarity, and ZKP verification...';
+
+        // Reset progress bars before match
+        resetProgressBars();
+
+        showLoading('Computing PPRL & ZKP Verification...');
 
         try {
             const response = await fetch('/api/match', {
@@ -184,8 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     'x-api-key': apiKey
                 },
                 body: JSON.stringify({
-                    source_identity_id: sourceId,
-                    target_identity_id: targetId,
+                    source_identity_id: Number(sourceId),
+                    target_identity_id: Number(targetId),
                     enable_zkp: enableZkp
                 })
             });
@@ -193,12 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (data.success) {
+                hideLoading();
                 renderMatchVerdict(data, sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
             } else {
+                hideLoading();
                 renderSimulatedMatch(sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
             }
         } catch (err) {
             console.warn('API call fallback:', err);
+            hideLoading();
             renderSimulatedMatch(sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
         } finally {
             executeMatchBtn.disabled = false;
@@ -207,6 +369,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function resetProgressBars() {
+        const bars = [barToken, barName, barDob, barIdVal, barZkp];
+        const texts = [txtToken, txtName, txtDob, txtIdVal, txtZkp];
+        bars.forEach(bar => {
+            bar.style.width = '0%';
+            bar.classList.remove('animate-in');
+        });
+        texts.forEach(txt => {
+            txt.textContent = '0 / 0.00';
+        });
+    }
+
     function updateScoringLabels(isCross) {
         const lblToken = document.getElementById('lblToken');
         const lblName = document.getElementById('lblName');
@@ -214,11 +388,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const lblIdVal = document.getElementById('lblIdVal');
         const lblZkp = document.getElementById('lblZkp');
 
-        if (lblToken) lblToken.textContent = `Exact PPRL Token Match (${isCross ? '0%' : '40%'})`;
-        if (lblName) lblName.textContent = `Person Name Similarity (${isCross ? '50%' : '20%'})`;
-        if (lblDob) lblDob.textContent = `Date of Birth Match (${isCross ? '40%' : '15%'})`;
-        if (lblIdVal) lblIdVal.textContent = `Identity Value Similarity (${isCross ? '5%' : '15%'})`;
-        if (lblZkp) lblZkp.textContent = `Zero-Knowledge Proof (ZKP) Bonus (${isCross ? '5%' : '10%'})`;
+        if (isCross) {
+            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (0%)';
+            if (lblName) lblName.textContent = 'Person Name Similarity (50%)';
+            if (lblDob) lblDob.textContent = 'Date of Birth Match (40%)';
+            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (5%)';
+            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (5%)';
+        } else {
+            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (40%)';
+            if (lblName) lblName.textContent = 'Person Name Similarity (20%)';
+            if (lblDob) lblDob.textContent = 'Date of Birth Match (15%)';
+            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (15%)';
+            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (10%)';
+        }
     }
 
     function renderMatchVerdict(data, srcPerson, tgtPerson, enableZkp) {
@@ -229,8 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
         vTitle.textContent = verdict;
         vDesc.textContent = `Confidence Score: ${score}% (${data.description || 'Verified Linkage'})`;
 
-        // Record live audit log entry for this exact search
-        recordLiveAuditLog(srcPerson, tgtPerson, verdict, score);
+        // Add animate-in class for smooth progress bar growth
+        requestAnimationFrame(() => {
+            const bars = [barToken, barName, barDob, barIdVal, barZkp];
+            bars.forEach(bar => setTimeout(() => bar.classList.add('animate-in'), 50));
+        });
 
         const srcText = sourceIdentitySelect.options[sourceIdentitySelect.selectedIndex]?.text || '';
         const tgtText = targetIdentitySelect.options[targetIdentitySelect.selectedIndex]?.text || '';
@@ -248,14 +433,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.scoring && data.scoring.breakdown) {
             const bd = data.scoring.breakdown;
-            updateBar(txtToken, barToken, bd.exactTokenScore || 0, maxExact, maxExact || 40);
-            updateBar(txtName, barName, bd.nameScore || 0, maxName, maxName);
-            updateBar(txtDob, barDob, bd.dobScore || 0, maxDob, maxDob);
-            updateBar(txtIdVal, barIdVal, bd.identityValueScore || 0, maxIdVal, maxIdVal);
-            updateBar(txtZkp, barZkp, bd.zkpScore || 0, maxZkp, maxZkp);
+            // Trigger smooth animation with slight delay for cascading effect
+            setTimeout(() => updateBarAnimated(txtToken, barToken, bd.exactTokenScore || 0, maxExact, maxExact || 40), 100);
+            setTimeout(() => updateBarAnimated(txtName, barName, bd.nameScore || 0, maxName, maxName), 200);
+            setTimeout(() => updateBarAnimated(txtDob, barDob, bd.dobScore || 0, maxDob, maxDob), 300);
+            setTimeout(() => updateBarAnimated(txtIdVal, barIdVal, bd.identityValueScore || 0, maxIdVal, maxIdVal), 400);
+            setTimeout(() => updateBarAnimated(txtZkp, barZkp, bd.zkpScore || 0, maxZkp, maxZkp), 500);
         } else {
             renderSimulatedMatch(srcPerson, tgtPerson, enableZkp);
         }
+    }
+
+    function updateBarAnimated(txtElem, barElem, val, max, scaleMax) {
+        txtElem.textContent = `${val.toFixed(2)} / ${max.toFixed(2)}`;
+        const pct = scaleMax > 0 ? (val / scaleMax) * 100 : 0;
+        barElem.style.width = `${Math.min(pct, 100)}%`;
+        barElem.classList.add('animate-in');
     }
 
     function renderSimulatedMatch(srcPerson, tgtPerson, enableZkp) {
@@ -287,6 +480,15 @@ document.addEventListener('DOMContentLoaded', () => {
         vTitle.textContent = verdict;
         vDesc.textContent = `Confidence Score: ${score.toFixed(2)}% (${isSamePerson ? 'Identities belong to the same person' : 'Identities belong to different persons'})`;
 
+        // Add staggered animations for simulated matches
+        requestAnimationFrame(() => {
+            setTimeout(() => barToken.classList.add('animate-in'), 100);
+            setTimeout(() => barName.classList.add('animate-in'), 200);
+            setTimeout(() => barDob.classList.add('animate-in'), 300);
+            setTimeout(() => barIdVal.classList.add('animate-in'), 400);
+            setTimeout(() => barZkp.classList.add('animate-in'), 500);
+        });
+
         recordLiveAuditLog(srcPerson, tgtPerson, verdict, score);
 
         updateBar(txtToken, barToken, tokenScore, maxExact, maxExact || 40);
@@ -311,7 +513,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 confidence_score: score
             })
         };
-        // Accumulate ALL audit log entries (newest first)
         allAuditLogs.unshift(newLog);
         renderAuditTable(allAuditLogs);
     }
@@ -335,7 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCitizenRegistry(filterQuery = '') {
         const tbody = document.getElementById('citizensTableBody');
-        if (!allPersonsData || allPersonsData.length === 0) return;
+        if (!allPersonsData || allPersonsData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 2rem;">No citizen data available.</td></tr>';
+            return;
+        }
 
         const q = filterQuery.toLowerCase().trim();
 
@@ -354,22 +558,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         tbody.innerHTML = filteredPersons.map(p => {
-            // Find ALL identities belonging to this person from DB identities data
             const pIdentities = allIdentitiesData.filter(i => Number(i.person_id) === Number(p.person_id));
-            
+
             let badgesHtml = '';
             let systemsText = '';
 
             if (pIdentities.length > 0) {
-                // Extract unique identity types
                 const types = Array.from(new Set(pIdentities.map(i => i.identity_type)));
                 badgesHtml = types.map(t => `<span class="badge-pill ${badgeMap[t] || 'badge-blue'}" style="margin-right: 4px;">${t}</span>`).join('');
-                
-                // Extract unique source systems
+
                 const systems = Array.from(new Set(pIdentities.map(i => i.source_system).filter(Boolean)));
                 systemsText = systems.join(', ');
             } else {
-                // Fallback if identities list hasn't loaded yet
                 badgesHtml = `<span class="badge-pill badge-blue">PHONE</span>`;
                 systemsText = 'Demo Mobile System';
             }
@@ -395,33 +595,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // VIEW 4: AUDIT EXPLORER
     async function fetchAuditExplorerLogs() {
-        const tbody = document.getElementById('auditExplorerTableBody');
+        const btn = document.getElementById('refreshAuditViewBtn');
+        const originalBtnText = btn?.innerHTML;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-inline"></span> Loading...';
+        }
+
         try {
             const res = await fetch('/api/audit-logs?limit=100', {
                 headers: { 'x-api-key': apiKey }
             });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
             if (data.success && data.logs) {
-                // Show ALL logs from database (newest first, as returned)
                 allAuditLogs = data.logs;
                 renderAuditTable(allAuditLogs);
+                showToast('Audit logs refreshed successfully', 'success');
                 return;
             }
         } catch (e) {
             console.log('Audit logs fetch error:', e.message);
+            showToast('Failed to fetch audit logs - using cached data', 'warning');
         }
 
-        // Fallback: show whatever is in local allAuditLogs accumulated this session
         if (allAuditLogs.length > 0) {
             renderAuditTable(allAuditLogs);
         } else {
+            const tbody = document.getElementById('auditExplorerTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:2rem;">No audit logs yet. Run a match to generate logs.</td></tr>';
+        }
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnText;
         }
     }
 
     const clearAuditViewBtn = document.getElementById('clearAuditViewBtn');
     if (clearAuditViewBtn) {
         clearAuditViewBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to clear ALL audit logs? This action cannot be undone.')) return;
             try {
                 await fetch('/api/audit-logs', {
                     method: 'DELETE',
@@ -430,7 +644,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {
                 console.log('DB truncate failed, clearing local list only');
             }
-            // Reset local log list entirely
             allAuditLogs = [];
             const tbody = document.getElementById('auditExplorerTableBody');
             tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:2rem;">All audit logs cleared. Numbering resets from #1 on next match.</td></tr>';
@@ -439,14 +652,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderAuditTable(logs) {
         const tbody = document.getElementById('auditExplorerTableBody');
+        if (!logs || logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:2rem;">No audit logs found.</td></tr>';
+            return;
+        }
         tbody.innerHTML = logs.map(log => `
             <tr>
                 <td><strong>#${log.audit_id || log.auditId || 'N/A'}</strong></td>
                 <td>${new Date(log.action_timestamp || log.timestamp || Date.now()).toLocaleString()}</td>
-                <td><span class="badge-pill badge-blue">${log.action_type || log.actionType}</span></td>
-                <td><code>${log.entity_type || log.entityType}:${log.entity_id || log.entityId}</code></td>
-                <td>${log.performed_by || log.performedBy}</td>
-                <td style="font-family: monospace; font-size: 0.78rem;">${typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}</td>
+                <td><span class="badge-pill badge-blue">${log.action_type || log.actionType || 'N/A'}</span></td>
+                <td><code>${log.entity_type || log.entityType || 'N/A'}:${log.entity_id || log.entityId || 'N/A'}</code></td>
+                <td>${log.performed_by || log.performedBy || 'N/A'}</td>
+                <td style="font-family: monospace; font-size: 0.78rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || '')}">${typeof log.details === 'object' ? JSON.stringify(log.details) : (log.details || 'N/A')}</td>
             </tr>
         `).join('');
     }
@@ -454,14 +671,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // VIEW 5: CRYPTOGRAPHY LAB INTERACTION
     document.getElementById('genPprlBtn').addEventListener('click', () => {
         const inputVal = document.getElementById('cryptoPprlInput').value;
-        const hash = 'PPRL_' + Array.from(inputVal).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 0).toString(16).padEnd(32, 'a7f3');
-        document.getElementById('pprlOutputHash').textContent = hash;
+        if (!inputVal) return;
+
+        const btn = document.getElementById('genPprlBtn');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-inline"></span> GENERATING...';
+
+        setTimeout(() => {
+            const hash = 'PPRL_' + Array.from(inputVal).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 0).toString(16).padEnd(32, 'a7f3');
+            document.getElementById('pprlOutputHash').textContent = hash;
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }, 400);
     });
 
     document.getElementById('genZkpBtn').addEventListener('click', () => {
-        document.getElementById('zkpOutputStatus').textContent = 'COMPUTING PROOF...';
+        const btn = document.getElementById('genZkpBtn');
+        const statusEl = document.getElementById('zkpOutputStatus');
+        const originalText = btn.innerHTML;
+
+        btn.disabled = true;
+        statusEl.textContent = 'COMPUTING PROOF...';
+        statusEl.style.color = '#f59e0b';
+
         setTimeout(() => {
-            document.getElementById('zkpOutputStatus').textContent = 'VERIFIED_ZKP ✅ (Proof Satisfied)';
-        }, 300);
+            statusEl.textContent = 'VERIFIED_ZKP ✅ (Proof Satisfied)';
+            statusEl.style.color = '#059669';
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }, 600);
     });
 });

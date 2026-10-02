@@ -26,7 +26,7 @@
   <nav class="tab-navbar">
     <div class="nav-tab active" data-view="dashboardView">🏠 Overview</div>
     <div class="nav-tab" data-view="stepperView">🔗 Resolution Stepper</div>
-    <div class="nav-tab" data-view="citizensView">👥 Citizen Registry (40)</div>
+    <div class="nav-tab" data-view="citizensView">👥 Citizen Registry (350)</div>
     <div class="nav-tab" data-view="auditView">📜 Audit Explorer</div>
     <div class="nav-tab" data-view="cryptoView">🔒 Cryptography Lab</div>
   </nav>
@@ -50,17 +50,17 @@
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-title">Citizens Registered</div>
-          <div class="metric-value">40</div>
+          <div class="metric-value">350</div>
           <div class="metric-sub">Federal Citizen Population</div>
         </div>
         <div class="metric-card">
           <div class="metric-title">System Identities</div>
-          <div class="metric-value">61</div>
+          <div class="metric-value">1,050</div>
           <div class="metric-sub">Across 7 Disparate Systems</div>
         </div>
         <div class="metric-card">
           <div class="metric-title">Linked Identity Pairs</div>
-          <div class="metric-value">18</div>
+          <div class="metric-value">700</div>
           <div class="metric-sub">Verified Cross-Domain Links</div>
         </div>
         <div class="metric-card">
@@ -162,12 +162,12 @@
                   <span>Select Source Person & Record</span>
                   <span class="badge-pill badge-blue">System A</span>
                 </div>
-                <div class="step-card-sub">First select a Person (1 to 40), then select their specific system record.</div>
+                <div class="step-card-sub">First select a Person (1 to 350), then select their specific system record.</div>
 
                 <div class="select-group">
-                  <label class="select-label">1. Primary Citizen Selection (Persons 1 to 40)</label>
+                  <label class="select-label">1. Primary Citizen Selection (Persons 1 to 350)</label>
                   <select class="custom-select" id="sourcePersonSelect">
-                    <option value="">Loading 40 Persons...</option>
+                    <option value="">Loading 350 Persons...</option>
                   </select>
                 </div>
 
@@ -191,9 +191,9 @@
                 <div class="step-card-sub">Select target Person and their cross-system record to compare against.</div>
 
                 <div class="select-group">
-                  <label class="select-label">1. Target Citizen Selection (Persons 1 to 40)</label>
+                  <label class="select-label">1. Target Citizen Selection (Persons 1 to 350)</label>
                   <select class="custom-select" id="targetPersonSelect">
-                    <option value="">Loading 40 Persons...</option>
+                    <option value="">Loading 350 Persons...</option>
                   </select>
                 </div>
 
@@ -242,27 +242,27 @@
           <div class="breakdown-list">
             <div class="breakdown-row">
               <div class="breakdown-meta"><span id="lblToken">Exact PPRL Token Match (40%)</span><span id="txtToken">0 / 40.00</span></div>
-              <div class="progress-bg"><div class="progress-bar" id="barToken" style="width: 0%;"></div></div>
+              <div class="progress-bg"><div class="progress-bar bar-token" id="barToken" style="width: 0%;"></div></div>
             </div>
 
             <div class="breakdown-row">
               <div class="breakdown-meta"><span id="lblName">Person Name Similarity (20%)</span><span id="txtName">0 / 20.00</span></div>
-              <div class="progress-bg"><div class="progress-bar" id="barName" style="width: 0%;"></div></div>
+              <div class="progress-bg"><div class="progress-bar bar-name" id="barName" style="width: 0%;"></div></div>
             </div>
 
             <div class="breakdown-row">
               <div class="breakdown-meta"><span id="lblDob">Date of Birth Match (15%)</span><span id="txtDob">0 / 15.00</span></div>
-              <div class="progress-bg"><div class="progress-bar" id="barDob" style="width: 0%;"></div></div>
+              <div class="progress-bg"><div class="progress-bar bar-dob" id="barDob" style="width: 0%;"></div></div>
             </div>
 
             <div class="breakdown-row">
               <div class="breakdown-meta"><span id="lblIdVal">Identity Value Similarity (15%)</span><span id="txtIdVal">0 / 15.00</span></div>
-              <div class="progress-bg"><div class="progress-bar" id="barIdVal" style="width: 0%;"></div></div>
+              <div class="progress-bg"><div class="progress-bar bar-idval" id="barIdVal" style="width: 0%;"></div></div>
             </div>
 
             <div class="breakdown-row">
               <div class="breakdown-meta"><span id="lblZkp">Zero-Knowledge Proof (ZKP) Bonus (10%)</span><span id="txtZkp">0 / 10.00</span></div>
-              <div class="progress-bg"><div class="progress-bar" id="barZkp" style="width: 0%;"></div></div>
+              <div class="progress-bg"><div class="progress-bar bar-zkp" id="barZkp" style="width: 0%;"></div></div>
             </div>
           </div>
 
@@ -281,7 +281,7 @@
     <section class="view-panel" id="citizensView">
       <div class="panel-card">
         <div class="card-header-bar">
-          <div class="card-title-text">👥 Citizen Registry (All 40 Persons & 61 Identities)</div>
+          <div class="card-title-text">👥 Citizen Registry (All 350 Citizens & 1,050 Identities)</div>
           <input type="text" class="search-input" id="searchCitizenInput" placeholder="Search person by name or ID...">
         </div>
 
@@ -297,7 +297,7 @@
               </tr>
             </thead>
             <tbody id="citizensTableBody">
-              <tr><td colspan="5" style="text-align: center;">Loading 40 citizens...</td></tr>
+              <tr><td colspan="5" style="text-align: center;">Loading 350 citizens...</td></tr>
             </tbody>
           </table>
         </div>
