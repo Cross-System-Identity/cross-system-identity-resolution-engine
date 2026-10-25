@@ -155,373 +155,92 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Stepper UI Elements
-    const sourcePersonSelect = document.getElementById('sourcePersonSelect');
-    const sourceIdentitySelect = document.getElementById('sourceIdentitySelect');
-    const targetPersonSelect = document.getElementById('targetPersonSelect');
-    const targetIdentitySelect = document.getElementById('targetIdentitySelect');
-    const zkpCheckbox = document.getElementById('zkpCheckbox');
+    // Resolution stepper: users enter exactly two fictional identity values.
+    const sourceIdentityType = document.getElementById('sourceIdentityType');
+    const sourceIdentityValue = document.getElementById('sourceIdentityValue');
+    const targetIdentityType = document.getElementById('targetIdentityType');
+    const targetIdentityValue = document.getElementById('targetIdentityValue');
     const executeMatchBtn = document.getElementById('executeMatchBtn');
-
-    const stNode1 = document.getElementById('stNode1');
-    const stNode2 = document.getElementById('stNode2');
     const stNode3 = document.getElementById('stNode3');
-
     const vBox = document.getElementById('vBox');
     const vTitle = document.getElementById('vTitle');
     const vDesc = document.getElementById('vDesc');
 
-    const txtToken = document.getElementById('txtToken');
-    const barToken = document.getElementById('barToken');
-    const txtName = document.getElementById('txtName');
-    const barName = document.getElementById('barName');
-    const txtDob = document.getElementById('txtDob');
-    const barDob = document.getElementById('barDob');
-    const txtIdVal = document.getElementById('txtIdVal');
-    const barIdVal = document.getElementById('barIdVal');
-    const txtZkp = document.getElementById('txtZkp');
-    const barZkp = document.getElementById('barZkp');
-
-    // Load Persons and Identities
-    fetchPersons();
-    fetchIdentities();
-
-    async function fetchIdentities() {
+    // Keep the separate Citizen Registry populated; this data is not used by the stepper.
+    loadDirectoryData();
+    async function loadDirectoryData() {
         try {
-            const res = await fetch('/api/identities');
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            if (data.success && data.identities) {
-                allIdentitiesData = data.identities;
+            const [peopleResponse, identitiesResponse] = await Promise.all([
+                fetch('/api/persons'), fetch('/api/identities')
+            ]);
+            if (peopleResponse.ok) {
+                const people = await peopleResponse.json();
+                allPersonsData = people.persons || [];
+            }
+            if (identitiesResponse.ok) {
+                const identities = await identitiesResponse.json();
+                allIdentitiesData = identities.identities || [];
                 apiReady = true;
             }
-        } catch (e) {
-            console.warn('API /api/identities offline, using fallback:', e.message);
-            generateFallbackIdentities();
+        } catch (error) {
+            console.warn('Could not load the separate registry data:', error.message);
         }
     }
 
-    async function fetchPersons() {
-        try {
-            const res = await fetch('/api/persons');
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            if (data.success && data.persons && data.persons.length > 0) {
-                allPersonsData = data.persons;
-                populatePersonDropdowns(data.persons);
-                return;
-            }
-        } catch (e) {
-            console.warn('API /api/persons offline, using fallback 40 list:', e.message);
-        }
-
-        // Fallback 350 list
-        const fallbackPersons = [];
-        for (let i = 1; i <= 350; i++) {
-            fallbackPersons.push({ person_id: i, full_name: `Test Person ${i}` });
-        }
-        allPersonsData = fallbackPersons;
-        populatePersonDropdowns(fallbackPersons);
-    }
-
-    function generateFallbackIdentities() {
-        const ids = [];
-        for (let i = 1; i <= 350; i++) {
-            const pad = String(i).padStart(3, '0');
-            ids.push({ identity_id: i * 3 - 2, person_id: i, identity_type: 'PHONE', identity_value: `PHONE_TEST_${pad}`, source_system: 'Demo Mobile System' });
-            ids.push({ identity_id: i * 3 - 1, person_id: i, identity_type: 'ABHA', identity_value: `ABHA_TEST_${pad}`, source_system: 'Demo Health System' });
-            ids.push({ identity_id: i * 3, person_id: i, identity_type: 'AADHAAR', identity_value: `AADHAAR_TEST_${pad}`, source_system: 'Demo ID System' });
-        }
-        allIdentitiesData = ids;
-    }
-
-    function populatePersonDropdowns(persons) {
-        const optionsHtml = persons.map(p =>
-            `<option value="${p.person_id}">Person ${p.person_id}: ${p.full_name}</option>`
-        ).join('');
-
-        sourcePersonSelect.innerHTML = `<option value="">-- Select Source Person (1 to ${persons.length}) --</option>` + optionsHtml;
-        targetPersonSelect.innerHTML = `<option value="">-- Select Target Person (1 to ${persons.length}) --</option>` + optionsHtml;
-
-        // Auto-select Person 1 for Source and Person 2 for Target for instant readiness
-        sourcePersonSelect.value = "1";
-        loadSourceIdentities(1);
-
-        targetPersonSelect.value = "2";
-        loadTargetIdentities(2);
-    }
-
-    // Source Person Change -> Cascade Sub-Dropdown
-    sourcePersonSelect.addEventListener('change', (e) => {
-        const personId = e.target.value;
-        if (personId) {
-            loadSourceIdentities(personId);
-            stNode1.classList.add('done');
-            stNode2.classList.add('active');
-        }
-    });
-
-    // Target Person Change -> Cascade Sub-Dropdown
-    targetPersonSelect.addEventListener('change', (e) => {
-        const personId = e.target.value;
-        if (personId) {
-            loadTargetIdentities(personId);
-            stNode2.classList.add('done');
-            stNode3.classList.add('active');
-        }
-    });
-
-    async function loadSourceIdentities(personId) {
-        sourceIdentitySelect.innerHTML = `<option value="">Loading records for Person ${personId}...</option>`;
-        const identities = await fetchIdentitiesForPerson(personId);
-        sourceIdentitySelect.innerHTML = identities.map(id =>
-            `<option value="${id.identity_id}">[${id.identity_type}] ${id.identity_value} (${id.source_system || 'System'})</option>`
-        ).join('');
-    }
-
-    async function loadTargetIdentities(personId) {
-        targetIdentitySelect.innerHTML = `<option value="">Loading records for Person ${personId}...</option>`;
-        const identities = await fetchIdentitiesForPerson(personId);
-        targetIdentitySelect.innerHTML = identities.map(id =>
-            `<option value="${id.identity_id}">[${id.identity_type}] ${id.identity_value} (${id.source_system || 'System'})</option>`
-        ).join('');
-    }
-
-    async function fetchIdentitiesForPerson(personId) {
-        try {
-            const res = await fetch(`/api/persons/${personId}/identities`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            if (data.success && data.identities && data.identities.length > 0) {
-                return data.identities;
-            }
-        } catch (e) {
-            console.log(`Fallback identities for person ${personId}`);
-        }
-
-        // Fallback generator per person
-        const pad = String(personId).padStart(3, '0');
-        return [
-            { identity_id: (personId * 2) - 1, person_id: personId, identity_type: 'PHONE', identity_value: `PHONE_TEST_${pad}`, source_system: 'Demo Mobile System' },
-            { identity_id: (personId * 2), person_id: personId, identity_type: 'ABHA', identity_value: `ABHA_TEST_${pad}`, source_system: 'Demo Health System' }
-        ];
-    }
-
-    // Execute Match Action
     executeMatchBtn.addEventListener('click', async () => {
-        const sourceId = sourceIdentitySelect.value;
-        const targetId = targetIdentitySelect.value;
-        const enableZkp = zkpCheckbox.checked;
+        const sourceType = sourceIdentityType.value;
+        const sourceValue = sourceIdentityValue.value.trim().toUpperCase();
+        const targetType = targetIdentityType.value;
+        const targetValue = targetIdentityValue.value.trim().toUpperCase();
+        const idPattern = /^[A-Z]+_TEST_[0-9]{3}$/;
 
-        if (!sourceId || !targetId) {
-            alert('Please select both Source and Target identity records!');
+        if (!sourceValue || !targetValue) {
+            showToast('Enter both fictional test IDs.', 'error');
             return;
         }
-
-        if (sourceId === targetId) {
-            alert('Source and Target must be different identity records!');
+        if (!idPattern.test(sourceValue) || !idPattern.test(targetValue)) {
+            showToast('Use the format SYSTEM_TEST_001.', 'error');
+            return;
+        }
+        if (!sourceValue.startsWith(`${sourceType}_TEST_`) ||
+            !targetValue.startsWith(`${targetType}_TEST_`)) {
+            showToast('Each ID must match its selected identity system.', 'error');
             return;
         }
 
         stNode3.classList.add('active');
-
-        // Reset verdict box
         vBox.className = 'verdict-box';
-        vTitle.textContent = 'PROCESSING';
-        vDesc.textContent = 'Running PPRL tokenization, Bloom filter similarity, and ZKP verification...';
-
-        // Reset progress bars before match
-        resetProgressBars();
-
-        showLoading('Computing PPRL & ZKP Verification...');
+        vTitle.textContent = 'CHECKING';
+        vDesc.textContent = 'Checking the two fictional identifiers…';
+        executeMatchBtn.disabled = true;
 
         try {
             const response = await fetch('/api/match', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey
-                },
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
                 body: JSON.stringify({
-                    source_identity_id: Number(sourceId),
-                    target_identity_id: Number(targetId),
-                    enable_zkp: enableZkp
+                    source_identity_type: sourceType,
+                    source_identity_value: sourceValue,
+                    target_identity_type: targetType,
+                    target_identity_value: targetValue
                 })
             });
-
             const data = await response.json();
-
-            if (data.success) {
-                hideLoading();
-                renderMatchVerdict(data, sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
-            } else {
-                hideLoading();
-                renderSimulatedMatch(sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'The match request failed.');
             }
-        } catch (err) {
-            console.warn('API call fallback:', err);
-            hideLoading();
-            renderSimulatedMatch(sourcePersonSelect.value, targetPersonSelect.value, enableZkp);
+            vBox.className = `verdict-box ${data.match_result}`;
+            vTitle.textContent = data.match_result;
+            vDesc.textContent = `${data.confidence_score}% confidence. ${data.description || ''}`;
+        } catch (error) {
+            vBox.className = 'verdict-box';
+            vTitle.textContent = 'CHECK FAILED';
+            vDesc.textContent = error.message || 'Could not check these identifiers.';
         } finally {
             executeMatchBtn.disabled = false;
-            executeMatchBtn.innerHTML = '🔒 RUN PRIVACY-PRESERVING MATCH';
             await fetchAuditExplorerLogs();
         }
     });
-
-    function resetProgressBars() {
-        const bars = [barToken, barName, barDob, barIdVal, barZkp];
-        const texts = [txtToken, txtName, txtDob, txtIdVal, txtZkp];
-        bars.forEach(bar => {
-            bar.style.width = '0%';
-            bar.classList.remove('animate-in');
-        });
-        texts.forEach(txt => {
-            txt.textContent = '0 / 0.00';
-        });
-    }
-
-    function updateScoringLabels(isCross) {
-        const lblToken = document.getElementById('lblToken');
-        const lblName = document.getElementById('lblName');
-        const lblDob = document.getElementById('lblDob');
-        const lblIdVal = document.getElementById('lblIdVal');
-        const lblZkp = document.getElementById('lblZkp');
-
-        if (isCross) {
-            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (0%)';
-            if (lblName) lblName.textContent = 'Person Name Similarity (50%)';
-            if (lblDob) lblDob.textContent = 'Date of Birth Match (40%)';
-            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (5%)';
-            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (5%)';
-        } else {
-            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (40%)';
-            if (lblName) lblName.textContent = 'Person Name Similarity (20%)';
-            if (lblDob) lblDob.textContent = 'Date of Birth Match (15%)';
-            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (15%)';
-            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (10%)';
-        }
-    }
-
-    function renderMatchVerdict(data, srcPerson, tgtPerson, enableZkp) {
-        const verdict = data.match_result || 'CONFIRMED_MATCH';
-        const score = data.confidence_score || 90.0;
-
-        vBox.className = `verdict-box ${verdict}`;
-        vTitle.textContent = verdict;
-        vDesc.textContent = `Confidence Score: ${score}% (${data.description || 'Verified Linkage'})`;
-
-        // Add animate-in class for smooth progress bar growth
-        requestAnimationFrame(() => {
-            const bars = [barToken, barName, barDob, barIdVal, barZkp];
-            bars.forEach(bar => setTimeout(() => bar.classList.add('animate-in'), 50));
-        });
-
-        const srcText = sourceIdentitySelect.options[sourceIdentitySelect.selectedIndex]?.text || '';
-        const tgtText = targetIdentitySelect.options[targetIdentitySelect.selectedIndex]?.text || '';
-        const srcType = (srcText.match(/\[(.*?)\]/)?.[1] || '').trim().toUpperCase();
-        const tgtType = (tgtText.match(/\[(.*?)\]/)?.[1] || '').trim().toUpperCase();
-        const isCross = (srcType !== '' && tgtType !== '' && srcType !== tgtType);
-
-        updateScoringLabels(isCross);
-
-        const maxExact = isCross ? 0 : 40;
-        const maxName = isCross ? 50 : 20;
-        const maxDob = isCross ? 40 : 15;
-        const maxIdVal = isCross ? 5 : 15;
-        const maxZkp = isCross ? 5 : 10;
-
-        if (data.scoring && data.scoring.breakdown) {
-            const bd = data.scoring.breakdown;
-            // Trigger smooth animation with slight delay for cascading effect
-            setTimeout(() => updateBarAnimated(txtToken, barToken, bd.exactTokenScore || 0, maxExact, maxExact || 40), 100);
-            setTimeout(() => updateBarAnimated(txtName, barName, bd.nameScore || 0, maxName, maxName), 200);
-            setTimeout(() => updateBarAnimated(txtDob, barDob, bd.dobScore || 0, maxDob, maxDob), 300);
-            setTimeout(() => updateBarAnimated(txtIdVal, barIdVal, bd.identityValueScore || 0, maxIdVal, maxIdVal), 400);
-            setTimeout(() => updateBarAnimated(txtZkp, barZkp, bd.zkpScore || 0, maxZkp, maxZkp), 500);
-        } else {
-            renderSimulatedMatch(srcPerson, tgtPerson, enableZkp);
-        }
-    }
-
-    function updateBarAnimated(txtElem, barElem, val, max, scaleMax) {
-        txtElem.textContent = `${val.toFixed(2)} / ${max.toFixed(2)}`;
-        const pct = scaleMax > 0 ? (val / scaleMax) * 100 : 0;
-        barElem.style.width = `${Math.min(pct, 100)}%`;
-        barElem.classList.add('animate-in');
-    }
-
-    function renderSimulatedMatch(srcPerson, tgtPerson, enableZkp) {
-        const srcText = sourceIdentitySelect.options[sourceIdentitySelect.selectedIndex]?.text || '';
-        const tgtText = targetIdentitySelect.options[targetIdentitySelect.selectedIndex]?.text || '';
-        const srcType = (srcText.match(/\[(.*?)\]/)?.[1] || '').trim().toUpperCase();
-        const tgtType = (tgtText.match(/\[(.*?)\]/)?.[1] || '').trim().toUpperCase();
-        const isCross = (srcType !== '' && tgtType !== '' && srcType !== tgtType);
-
-        updateScoringLabels(isCross);
-
-        const isSamePerson = (srcPerson === tgtPerson);
-        let verdict = isSamePerson ? 'CONFIRMED_MATCH' : 'NO_MATCH';
-        let score = isSamePerson ? (enableZkp ? (isCross ? 98.29 : 100) : 90) : (isCross ? 37.78 : 27.23);
-
-        const maxExact = isCross ? 0 : 40;
-        const maxName = isCross ? 50 : 20;
-        const maxDob = isCross ? 40 : 15;
-        const maxIdVal = isCross ? 5 : 15;
-        const maxZkp = isCross ? 5 : 10;
-
-        let tokenScore = isCross ? 0 : (isSamePerson ? 40 : 0);
-        let nameScore = isCross ? (isSamePerson ? 50 : 14.65) : (isSamePerson ? 20 : 14.10);
-        let dobScore = isCross ? (isSamePerson ? 40 : 0) : (isSamePerson ? 15 : 0);
-        let idValScore = isCross ? (isSamePerson ? 3.29 : 3.13) : (isSamePerson ? 15 : 13.13);
-        let zkpScore = enableZkp ? maxZkp : 0;
-
-        vBox.className = `verdict-box ${verdict}`;
-        vTitle.textContent = verdict;
-        vDesc.textContent = `Confidence Score: ${score.toFixed(2)}% (${isSamePerson ? 'Identities belong to the same person' : 'Identities belong to different persons'})`;
-
-        // Add staggered animations for simulated matches
-        requestAnimationFrame(() => {
-            setTimeout(() => barToken.classList.add('animate-in'), 100);
-            setTimeout(() => barName.classList.add('animate-in'), 200);
-            setTimeout(() => barDob.classList.add('animate-in'), 300);
-            setTimeout(() => barIdVal.classList.add('animate-in'), 400);
-            setTimeout(() => barZkp.classList.add('animate-in'), 500);
-        });
-
-        recordLiveAuditLog(srcPerson, tgtPerson, verdict, score);
-
-        updateBar(txtToken, barToken, tokenScore, maxExact, maxExact || 40);
-        updateBar(txtName, barName, nameScore, maxName, maxName);
-        updateBar(txtDob, barDob, dobScore, maxDob, maxDob);
-        updateBar(txtIdVal, barIdVal, idValScore, maxIdVal, maxIdVal);
-        updateBar(txtZkp, barZkp, zkpScore, maxZkp, maxZkp);
-    }
-
-    function recordLiveAuditLog(srcPerson, tgtPerson, verdict, score) {
-        const newLog = {
-            audit_id: allAuditLogs.length + 1,
-            action_timestamp: new Date().toISOString(),
-            action_type: 'IDENTITY_MATCH',
-            entity_type: 'IDENTITY_LINK',
-            entity_id: allAuditLogs.length + 1,
-            performed_by: 'Module6-UI-User',
-            details: JSON.stringify({
-                source_person: `Person ${srcPerson}`,
-                target_person: `Person ${tgtPerson}`,
-                match_result: verdict,
-                confidence_score: score
-            })
-        };
-        allAuditLogs.unshift(newLog);
-        renderAuditTable(allAuditLogs);
-    }
-
-    function updateBar(txtElem, barElem, val, max, scaleMax) {
-        txtElem.textContent = `${val.toFixed(2)} / ${max.toFixed(2)}`;
-        const pct = scaleMax > 0 ? (val / scaleMax) * 100 : 0;
-        barElem.style.width = `${Math.min(pct, 100)}%`;
-    }
 
     // VIEW 3: CITIZEN REGISTRY
     const badgeMap = {
@@ -668,38 +387,4 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
-    // VIEW 5: CRYPTOGRAPHY LAB INTERACTION
-    document.getElementById('genPprlBtn').addEventListener('click', () => {
-        const inputVal = document.getElementById('cryptoPprlInput').value;
-        if (!inputVal) return;
-
-        const btn = document.getElementById('genPprlBtn');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-inline"></span> GENERATING...';
-
-        setTimeout(() => {
-            const hash = 'PPRL_' + Array.from(inputVal).reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 0).toString(16).padEnd(32, 'a7f3');
-            document.getElementById('pprlOutputHash').textContent = hash;
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }, 400);
-    });
-
-    document.getElementById('genZkpBtn').addEventListener('click', () => {
-        const btn = document.getElementById('genZkpBtn');
-        const statusEl = document.getElementById('zkpOutputStatus');
-        const originalText = btn.innerHTML;
-
-        btn.disabled = true;
-        statusEl.textContent = 'COMPUTING PROOF...';
-        statusEl.style.color = '#f59e0b';
-
-        setTimeout(() => {
-            statusEl.textContent = 'VERIFIED_ZKP ✅ (Proof Satisfied)';
-            statusEl.style.color = '#059669';
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }, 600);
-    });
 });

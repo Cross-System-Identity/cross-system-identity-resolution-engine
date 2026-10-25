@@ -28,7 +28,6 @@
     <div class="nav-tab" data-view="stepperView">🔗 Resolution Stepper</div>
     <div class="nav-tab" data-view="citizensView">👥 Citizen Registry (350)</div>
     <div class="nav-tab" data-view="auditView">📜 Audit Explorer</div>
-    <div class="nav-tab" data-view="cryptoView">🔒 Cryptography Lab</div>
   </nav>
 
   <!-- Viewport Area -->
@@ -39,11 +38,11 @@
       <div class="hero-banner">
         <div class="hero-text">
           <h2>Cross-System Identity Resolution Engine</h2>
-          <p>Enterprise-grade privacy-preserving platform for linking and verifying citizen digital identities across Aadhaar, ABHA, DigiLocker, Mobile, Email, PAN, and Voter registries without exposing raw PII.</p>
+          <p>Demo interface for checking whether two fictional identity test IDs are linked in the sample records. Use test values only; this is not a production identity service.</p>
         </div>
         <div class="hero-badge">
           <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Compliance & Governance</div>
-          <div style="font-size: 1.1rem; font-weight: 700; color: #4ade80;">DPDP & ZKP Compliant</div>
+          <div style="font-size: 1.1rem; font-weight: 700; color: #4ade80;">Fictional Test Data Demo</div>
         </div>
       </div>
 
@@ -83,17 +82,7 @@
               <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Privacy-Preserving Record Linkage (PPRL)</div>
             </div>
             <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
-              Utilizes salted HMAC-SHA256 tokenization and Bloom filter similarity analysis to perform high-precision record linkage across databases without exposing raw identifiers.
-            </p>
-          </div>
-
-          <div style="background: #f8fafc; padding: 1.25rem; border-radius: 10px; border: 1px solid #e2e8f0;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
-              <span style="font-size: 1.4rem;">🔑</span>
-              <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Zero-Knowledge Proof (ZKP) Verification</div>
-            </div>
-            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
-              Integrates non-interactive Fiat-Shamir ZKP cryptographic protocols, allowing citizens to prove ownership of their credentials without transmitting secret keys.
+              The sample engine demonstrates tokenization and record-linkage scoring against fictional identity records. Entered test IDs are sent to the backend for lookup.
             </p>
           </div>
 
@@ -133,7 +122,7 @@
               <div style="font-weight: 700; font-size: 1rem; color: #0f172a;">Strict PII Masking & Data Protection</div>
             </div>
             <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">
-              Enforces privacy compliance by automatically masking raw values (e.g., Aadhaar, Phone numbers) as <code>[PROTECTED]</code> in all client-facing responses and logs.
+              Match responses and new match audit details omit the submitted test-ID values and matched person names. Use fictional values in this demo.
             </p>
           </div>
 
@@ -154,77 +143,55 @@
           <div class="stepper-container">
             <div class="stepper-track-line"></div>
 
-            <!-- STEP 1: SOURCE SELECTION -->
             <div class="step-item active" id="stNode1">
               <div class="step-icon">1</div>
               <div class="step-card">
-                <div class="step-card-header">
-                  <span>Select Source Person & Record</span>
-                  <span class="badge-pill badge-blue">System A</span>
-                </div>
-                <div class="step-card-sub">First select a Person (1 to 350), then select their specific system record.</div>
-
+                <div class="step-card-header"><span>First identity value</span><span class="badge-pill badge-blue">Identifier A</span></div>
+                <div class="step-card-sub">Choose an identity system and enter its fictional test ID.</div>
                 <div class="select-group">
-                  <label class="select-label">1. Primary Citizen Selection (Persons 1 to 350)</label>
-                  <select class="custom-select" id="sourcePersonSelect">
-                    <option value="">Loading 350 Persons...</option>
+                  <label class="select-label" for="sourceIdentityType">Identity system</label>
+                  <select class="custom-select" id="sourceIdentityType">
+                    <option value="PHONE">Phone</option><option value="ABHA">ABHA</option>
+                    <option value="AADHAAR">Aadhaar</option><option value="DIGILOCKER">DigiLocker</option>
+                    <option value="EMAIL">Email</option><option value="PAN">PAN</option><option value="VOTER">Voter ID</option>
                   </select>
                 </div>
-
-                <div class="sub-select-box">
-                  <label class="select-label">2. Specific Record in System A</label>
-                  <select class="custom-select" id="sourceIdentitySelect">
-                    <option value="">Select Person above first...</option>
-                  </select>
+                <div class="select-group">
+                  <label class="select-label" for="sourceIdentityValue">Fictional test ID</label>
+                  <input class="custom-select" id="sourceIdentityValue" type="text" placeholder="PHONE_TEST_001" autocomplete="off">
                 </div>
               </div>
             </div>
 
-            <!-- STEP 2: TARGET SELECTION -->
             <div class="step-item" id="stNode2">
               <div class="step-icon">2</div>
               <div class="step-card">
-                <div class="step-card-header">
-                  <span>Select Target Person & System</span>
-                  <span class="badge-pill badge-blue">System B</span>
-                </div>
-                <div class="step-card-sub">Select target Person and their cross-system record to compare against.</div>
-
+                <div class="step-card-header"><span>Second identity value</span><span class="badge-pill badge-blue">Identifier B</span></div>
+                <div class="step-card-sub">Enter the second value to check whether both identifiers belong to the same person.</div>
                 <div class="select-group">
-                  <label class="select-label">1. Target Citizen Selection (Persons 1 to 350)</label>
-                  <select class="custom-select" id="targetPersonSelect">
-                    <option value="">Loading 350 Persons...</option>
+                  <label class="select-label" for="targetIdentityType">Identity system</label>
+                  <select class="custom-select" id="targetIdentityType">
+                    <option value="ABHA">ABHA</option><option value="PHONE">Phone</option>
+                    <option value="AADHAAR">Aadhaar</option><option value="DIGILOCKER">DigiLocker</option>
+                    <option value="EMAIL">Email</option><option value="PAN">PAN</option><option value="VOTER">Voter ID</option>
                   </select>
                 </div>
-
-                <div class="sub-select-box">
-                  <label class="select-label">2. Specific Record in System B</label>
-                  <select class="custom-select" id="targetIdentitySelect">
-                    <option value="">Select Target Person above first...</option>
-                  </select>
+                <div class="select-group">
+                  <label class="select-label" for="targetIdentityValue">Fictional test ID</label>
+                  <input class="custom-select" id="targetIdentityValue" type="text" placeholder="ABHA_TEST_001" autocomplete="off">
                 </div>
-
-                <div style="margin-top: 0.85rem;">
-                  <label style="font-size: 0.85rem; font-weight: 600; cursor: pointer;">
-                    <input type="checkbox" id="zkpCheckbox" checked> Enable Zero-Knowledge Proof (ZKP) Verification
-                  </label>
-                </div>
+                <div class="test-id-help">Examples: PHONE_TEST_001, ABHA_TEST_001, AADHAAR_TEST_001, DIGILOCKER_TEST_001, EMAIL_TEST_001, PAN_TEST_001, VOTER_TEST_001</div>
               </div>
             </div>
 
-            <!-- STEP 3: RESOLUTION ACTION -->
             <div class="step-item" id="stNode3">
               <div class="step-icon">3</div>
               <div class="step-card">
-                <div class="step-card-header">Execute Privacy-Preserving Matching</div>
-                <div class="step-card-sub">Triggers PPRL token generation, Bloom filter similarity evaluation, and ZKP proof verification.</div>
-                
-                <button class="btn-action" id="executeMatchBtn">
-                  <span>🔒</span> RUN PRIVACY-PRESERVING MATCH
-                </button>
+                <div class="step-card-header">Check the identifiers</div>
+                <div class="step-card-sub">The server checks both test IDs against its demo records.</div>
+                <button class="btn-action" id="executeMatchBtn" type="button">CHECK IDENTIFIERS</button>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -236,40 +203,12 @@
 
           <div class="verdict-box" id="vBox">
             <div class="verdict-title" id="vTitle">READY</div>
-            <div class="verdict-desc" id="vDesc">Select Source & Target records then click Run Match</div>
+            <div class="verdict-desc" id="vDesc">Enter two fictional test IDs, then check whether they match</div>
           </div>
-
-          <div class="breakdown-list">
-            <div class="breakdown-row">
-              <div class="breakdown-meta"><span id="lblToken">Exact PPRL Token Match (40%)</span><span id="txtToken">0 / 40.00</span></div>
-              <div class="progress-bg"><div class="progress-bar bar-token" id="barToken" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="breakdown-row">
-              <div class="breakdown-meta"><span id="lblName">Person Name Similarity (20%)</span><span id="txtName">0 / 20.00</span></div>
-              <div class="progress-bg"><div class="progress-bar bar-name" id="barName" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="breakdown-row">
-              <div class="breakdown-meta"><span id="lblDob">Date of Birth Match (15%)</span><span id="txtDob">0 / 15.00</span></div>
-              <div class="progress-bg"><div class="progress-bar bar-dob" id="barDob" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="breakdown-row">
-              <div class="breakdown-meta"><span id="lblIdVal">Identity Value Similarity (15%)</span><span id="txtIdVal">0 / 15.00</span></div>
-              <div class="progress-bg"><div class="progress-bar bar-idval" id="barIdVal" style="width: 0%;"></div></div>
-            </div>
-
-            <div class="breakdown-row">
-              <div class="breakdown-meta"><span id="lblZkp">Zero-Knowledge Proof (ZKP) Bonus (10%)</span><span id="txtZkp">0 / 10.00</span></div>
-              <div class="progress-bg"><div class="progress-bar bar-zkp" id="barZkp" style="width: 0%;"></div></div>
-            </div>
-          </div>
-
           <div class="privacy-shield-box">
             <div class="shield-icon">🛡️</div>
             <div class="shield-desc">
-              <strong>Privacy Protection Guarantee:</strong> Sensitive raw identity values (Aadhaar, Phone numbers) are masked as <code>[PROTECTED]</code> in all resolution outputs and audit logs.
+              <strong>Demo privacy note:</strong> Use fictional test IDs only. The result displays the match outcome without displaying a person’s name.
             </div>
           </div>
         </div>
@@ -344,48 +283,6 @@
       </div>
     </section>
 
-    <!-- VIEW 5: CRYPTOGRAPHY LAB -->
-    <section class="view-panel" id="cryptoView">
-      <div class="grid-2col">
-        <div class="panel-card">
-          <div class="card-header-bar">
-            <div class="card-title-text">🔑 PPRL Blinded Token Generator</div>
-          </div>
-          <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
-            Privacy-Preserving Record Linkage converts raw identifiers into anonymized salted HMAC-SHA256 blinded tokens.
-          </p>
-          <div class="select-group">
-            <label class="select-label">Input Raw Identity Value</label>
-            <input type="text" class="custom-select" id="cryptoPprlInput" value="PHONE_TEST_001">
-          </div>
-          <button class="btn-action" id="genPprlBtn">Generate PPRL Blinded Token</button>
-
-          <div style="margin-top: 1.25rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #cbd5e1;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #475569;">GENERATED BLINDED TOKEN:</div>
-            <code id="pprlOutputHash" style="font-size: 0.85rem; color: #2563eb; word-break: break-all;">PPRL_8f3a...</code>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <div class="card-header-bar">
-            <div class="card-title-text">⚡ Zero-Knowledge Proof (ZKP) Simulator</div>
-          </div>
-          <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
-            Fiat-Shamir Non-Interactive Zero-Knowledge Proof verifies identity ownership without exposing secret data.
-          </p>
-          <div class="select-group">
-            <label class="select-label">Prover Secret Key</label>
-            <input type="text" class="custom-select" id="cryptoZkpSecret" value="SECRET_PERSON_1">
-          </div>
-          <button class="btn-action" id="genZkpBtn">Compute & Verify ZKP Proof</button>
-
-          <div style="margin-top: 1.25rem; background: #ecfdf5; padding: 1rem; border-radius: 8px; border: 1px solid #a7f3d0;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #065f46;">ZKP PROOF STATUS:</div>
-            <div id="zkpOutputStatus" style="font-size: 1rem; font-weight: 700; color: #059669;">VERIFIED_ZKP ✅</div>
-          </div>
-        </div>
-      </div>
-    </section>
 
   </main>
 
