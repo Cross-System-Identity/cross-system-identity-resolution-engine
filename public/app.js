@@ -1,4 +1,4 @@
-﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
+﻿﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
 // Enhanced: robust error handling, cross-system scoring, dynamic citizen registry
 // v2.0: Added smooth animations, loading states, and enhanced visual feedback
 
@@ -225,9 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     target_identity_value: targetValue
                 })
             });
-            const data = await response.json();
-            if (!response.ok || !data.success) {
-                throw new Error(data.message || 'The match request failed.');
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                // response is not JSON
+            }
+            if (!response.ok || !data || !data.success) {
+                throw new Error((data && data.message) || `Server error (HTTP ${response.status}). Check server database logs.`);
             }
             vBox.className = `verdict-box ${data.match_result}`;
             vTitle.textContent = data.match_result;
