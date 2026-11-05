@@ -1,4 +1,4 @@
-﻿﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
+﻿﻿﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
 // Enhanced: robust error handling, cross-system scoring, dynamic citizen registry
 // v2.0: Added smooth animations, loading states, and enhanced visual feedback
 
@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 allIdentitiesData = identities.identities || [];
                 apiReady = true;
             }
+            renderCitizenRegistry();
         } catch (error) {
             console.warn('Could not load the separate registry data:', error.message);
         }
