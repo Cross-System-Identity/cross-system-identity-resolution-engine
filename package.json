@@ -1,10 +1,11 @@
-{
+﻿{
   "name": "cross-system-identity-resolution-engine",
   "version": "1.0.0",
   "description": "Privacy-preserving cross-system identity resolution engine for secure identity linkage, verification, and audit.",
   "type": "module",
   "main": "src/engine/index.js",
   "scripts": {
+    "start": "node src/api/server.js",
     "test": "node --test tests/security.test.js tests/engine.test.js tests/audit.test.js",
     "test:security": "node src/security/index.js",
     "test:engine": "node --test tests/engine.test.js",

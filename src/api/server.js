@@ -1,10 +1,11 @@
-import express from "express";
+﻿import express from "express";
 import dotenv from "dotenv";
 import { authenticate } from "./auth.js";
 import verificationRouter from "./verification.js";
 import matchingRouter from "./matching.js";
 import auditRouter from "./audit.js";
 import identitiesRouter from "./identities.js";
+import { initializeDatabase } from "./initDb.js";
 
 dotenv.config();
 
@@ -37,6 +38,8 @@ app.get("/api/health", (req, res) => {
 });
 
 // Start server
+await initializeDatabase();
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`API URL: http://localhost:${PORT}`);

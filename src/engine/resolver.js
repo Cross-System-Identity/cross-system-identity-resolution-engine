@@ -1,4 +1,4 @@
-import { deterministicMatch, probabilisticMatch, crossSystemMatch } from './matcher.js';
+﻿import { deterministicMatch, probabilisticMatch, crossSystemMatch } from './matcher.js';
 import { calculateConfidenceScore, assignMatchVerdict, SCORING_WEIGHTS, MATCH_THRESHOLDS } from './scorer.js';
 import { generateZeroKnowledgeProof, verifyZeroKnowledgeProof, generateSalt } from '../security/index.js';
 
@@ -50,7 +50,7 @@ export function resolveIdentity(recordA, recordB, options = {}) {
     const proof = generateZeroKnowledgeProof(recordA.secretForZkp, nonce);
 
     // Verifier checks if recordB's secret matches the proof
-    const verification = verifyZeroKnowledgeProof(recordA.secretForZkp, nonce, proof);
+    const verification = verifyZeroKnowledgeProof(recordB.secretForZkp, nonce, proof);
     zkpVerified = verification.isValid;
 
     zkpDetails = {
