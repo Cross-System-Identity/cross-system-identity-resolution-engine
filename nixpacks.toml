@@ -1,3 +1,5 @@
+providers = ["node"]
+
 [phases.setup]
 nixPkgs = ["nodejs_20"]
 
@@ -5,4 +7,4 @@ nixPkgs = ["nodejs_20"]
 cmds = ["npm install"]
 
 [start]
-cmd = "npm start"
+cmd = "node src/api/server.js"
