@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
+﻿﻿﻿﻿﻿﻿// Cross-System Identity Resolution Engine — Enterprise Portal JS
 // Enhanced: robust error handling, cross-system scoring, dynamic citizen registry
 // v2.0: Added smooth animations, loading states, and enhanced visual feedback
 
@@ -166,6 +166,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const vTitle = document.getElementById('vTitle');
     const vDesc = document.getElementById('vDesc');
 
+    const txtToken = document.getElementById('txtToken');
+    const barToken = document.getElementById('barToken');
+    const txtName = document.getElementById('txtName');
+    const barName = document.getElementById('barName');
+    const txtDob = document.getElementById('txtDob');
+    const barDob = document.getElementById('barDob');
+    const txtIdVal = document.getElementById('txtIdVal');
+    const barIdVal = document.getElementById('barIdVal');
+    const txtZkp = document.getElementById('txtZkp');
+    const barZkp = document.getElementById('barZkp');
+
     // Keep the separate Citizen Registry populated; this data is not used by the stepper.
     loadDirectoryData();
     async function loadDirectoryData() {
@@ -238,6 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
             vBox.className = `verdict-box ${data.match_result}`;
             vTitle.textContent = data.match_result;
             vDesc.textContent = `${data.confidence_score}% confidence. ${data.description || ''}`;
+
+            if (data.scoring && data.scoring.breakdown) {
+                renderBreakdownBars(data.scoring.breakdown, sourceType, targetType);
+            }
         } catch (error) {
             vBox.className = 'verdict-box';
             vTitle.textContent = 'CHECK FAILED';
@@ -247,6 +262,62 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetchAuditExplorerLogs();
         }
     });
+
+    function resetProgressBars() {
+        const bars = [barToken, barName, barDob, barIdVal, barZkp];
+        const texts = [txtToken, txtName, txtDob, txtIdVal, txtZkp];
+        bars.forEach(b => { if (b) { b.style.width = '0%'; b.classList.remove('animate-in'); } });
+        texts.forEach(t => { if (t) t.textContent = '0.00 / 0.00'; });
+    }
+
+    function renderBreakdownBars(bd, srcType, tgtType) {
+        const isCross = (srcType && tgtType && srcType.toUpperCase() !== tgtType.toUpperCase());
+        const maxExact = isCross ? 0 : 40;
+        const maxName = isCross ? 50 : 20;
+        const maxDob = isCross ? 40 : 15;
+        const maxIdVal = isCross ? 5 : 15;
+        const maxZkp = isCross ? 5 : 10;
+
+        updateScoringLabels(isCross);
+
+        updateBar(txtToken, barToken, bd.exactTokenScore || 0, maxExact);
+        updateBar(txtName, barName, bd.nameScore || 0, maxName);
+        updateBar(txtDob, barDob, bd.dobScore || 0, maxDob);
+        updateBar(txtIdVal, barIdVal, bd.identityValueScore || 0, maxIdVal);
+        updateBar(txtZkp, barZkp, bd.zkpScore || 0, maxZkp);
+    }
+
+    function updateScoringLabels(isCross) {
+        const lblToken = document.getElementById('lblToken');
+        const lblName = document.getElementById('lblName');
+        const lblDob = document.getElementById('lblDob');
+        const lblIdVal = document.getElementById('lblIdVal');
+        const lblZkp = document.getElementById('lblZkp');
+
+        if (isCross) {
+            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (0%)';
+            if (lblName) lblName.textContent = 'Person Name Similarity (50%)';
+            if (lblDob) lblDob.textContent = 'Date of Birth Match (40%)';
+            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (5%)';
+            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (5%)';
+        } else {
+            if (lblToken) lblToken.textContent = 'Exact PPRL Token Match (40%)';
+            if (lblName) lblName.textContent = 'Person Name Similarity (20%)';
+            if (lblDob) lblDob.textContent = 'Date of Birth Match (15%)';
+            if (lblIdVal) lblIdVal.textContent = 'Identity Value Similarity (15%)';
+            if (lblZkp) lblZkp.textContent = 'Zero-Knowledge Proof (ZKP) Bonus (10%)';
+        }
+    }
+
+    function updateBar(txtElem, barElem, val, max) {
+        if (!txtElem || !barElem) return;
+        txtElem.textContent = `${val.toFixed(2)} / ${max.toFixed(2)}`;
+        const pct = max > 0 ? (val / max) * 100 : 0;
+        const clampedPct = Math.min(Math.max(pct, 0), 100);
+        barElem.style.setProperty('--target-width', `${clampedPct}%`);
+        barElem.style.width = `${clampedPct}%`;
+        barElem.classList.add('animate-in');
+    }
 
     // VIEW 3: CITIZEN REGISTRY
     const badgeMap = {

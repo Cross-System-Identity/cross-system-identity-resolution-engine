@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import pool from "./db.js";
 import { authenticate } from "./auth.js";
 import { resolveIdentity } from "../engine/resolver.js";
@@ -60,15 +60,17 @@ router.post("/match", authenticate, async (req, res) => {
                 identityType: source.identity_type,
                 identityValue: source.identity_value,
                 personName: source.full_name,
-                dateOfBirth: source.date_of_birth
+                dateOfBirth: source.date_of_birth,
+                secretForZkp: `ZKP_SECRET_PERSON_${source.person_id}`
             },
             {
                 identityType: target.identity_type,
                 identityValue: target.identity_value,
                 personName: target.full_name,
-                dateOfBirth: target.date_of_birth
+                dateOfBirth: target.date_of_birth,
+                secretForZkp: `ZKP_SECRET_PERSON_${target.person_id}`
             },
-            { systemSalt: process.env.SYSTEM_SALT || "SYSTEM_SALT_2026", enableZkp: false }
+            { systemSalt: process.env.SYSTEM_SALT || "SYSTEM_SALT_2026", enableZkp: true }
         );
 
         const [insertResult] = await pool.query(
@@ -98,7 +100,8 @@ router.post("/match", authenticate, async (req, res) => {
             match_result: resolution.matchResult,
             confidence_score: resolution.confidenceScore,
             description: resolution.description,
-            execution_time_ms: resolution.executionTimeMs
+            execution_time_ms: resolution.executionTimeMs,
+            scoring: resolution.scoring
         });
     } catch (error) {
         console.error("Matching error:", error.message);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -204,6 +204,34 @@
           <div class="verdict-box" id="vBox">
             <div class="verdict-title" id="vTitle">READY</div>
             <div class="verdict-desc" id="vDesc">Enter two fictional test IDs, then check whether they match</div>
+          </div>
+
+          <!-- Confidence Weightage Scores Graph -->
+          <div class="breakdown-list" style="margin-top: 1.25rem;">
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblToken">Exact PPRL Token Match (0%)</span><span id="txtToken">0.00 / 0.00</span></div>
+              <div class="progress-bg"><div class="progress-bar bar-token" id="barToken" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblName">Person Name Similarity (50%)</span><span id="txtName">0.00 / 50.00</span></div>
+              <div class="progress-bg"><div class="progress-bar bar-name" id="barName" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblDob">Date of Birth Match (40%)</span><span id="txtDob">0.00 / 40.00</span></div>
+              <div class="progress-bg"><div class="progress-bar bar-dob" id="barDob" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblIdVal">Identity Value Similarity (5%)</span><span id="txtIdVal">0.00 / 5.00</span></div>
+              <div class="progress-bg"><div class="progress-bar bar-idval" id="barIdVal" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="breakdown-row">
+              <div class="breakdown-meta"><span id="lblZkp">Zero-Knowledge Proof (ZKP) Bonus (5%)</span><span id="txtZkp">0.00 / 5.00</span></div>
+              <div class="progress-bg"><div class="progress-bar bar-zkp" id="barZkp" style="width: 0%;"></div></div>
+            </div>
           </div>
           <div class="privacy-shield-box">
             <div class="shield-icon">🛡️</div>
